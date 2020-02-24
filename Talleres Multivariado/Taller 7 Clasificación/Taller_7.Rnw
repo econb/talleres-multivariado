@@ -1,0 +1,211 @@
+\documentclass{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{array}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+
+\title {Análisis Multivariado\\Taller No. 7: Clasificación de razas de perros}
+\author {Laura Elizabeth Holguín\\Eduardo Contreras Bohórquez\\Diana Catalina Martínez} 
+\date{}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+%1
+\section{Numere los nodos del árbol con los números de la descripción de los nodos (histograma de índices).}
+
+<<results=hide, echo=false, fig=false>>==
+library(FactoClass)
+data("BreedsDogs")
+y<-BreedsDogs[,-7]
+ys<-BreedsDogs[7]
+
+#ACM
+acm <- dudi.acm(y, scannf=FALSE, nf=2)
+iner <- inertia.dudi(acm,,T)
+iner$TOT
+
+#Clasificación
+fc<-FactoClass(y, dudi.acm, scanFC=FALSE,nf=2, nfcl=10,k.clust=4)
+fc
+names(fc$indices)
+sum(fc$indices$Indice)
+fc$carac.cate
+fc$clus.summ
+fc$cor.clus
+summary(fc)
+#W
+di<-dist(acm$li, method = "euclidean")
+w<-(1/(2*nrow(y)))*di
+round(w,2)
+
+ward<-ward.cluster(di, plots=TRUE)
+names(ward)
+sum(ward$Indice)
+sum(acm$eig)
+@
+
+\begin{figure}[H]
+\centering
+\includegraphics{arbol}
+\caption{Árbol de clasificación por el método de Ward de las razas de perros según las coordenadas de todos los ejes fatoriales}\label{arb}
+\end{figure}
+
+Los nodos correspondientes a la figura \ref{arb} corresponden al cuadro \ref{nod}.
+
+<<results=tex, echo=false>>==
+xtable(fc$indices, label="nod", caption="Nodos e índices correspondientes a la clasificación jerárquica", digits=c(0,0,0,0,4))
+@
+
+%2. 
+\section{Describa las tres primeras uniones en la clasificación jerárquica.}
+
+Los primeros tres grupos presentan distancia 0 entre sus individuos; corresponden a los duplos de las razas Chihuahua-Pequinés, Buld-Tec y Dalmata-Labrador. Entre los 6 individuos comparten tener afectividad alta, agresividad baja y velocidad baja; y a nivel grupal son separados por peso, talla e inteligencia, de modo que Chihuahua-Pequinés y Buld-Teck son perros de tamaño pequeño, que difieren en su inteligencia baja y media respectivamente, mientras que los Labrador-Dálmata son de tamaño mediano y con inteligencia media.
+
+%3. 
+\section{Justifique la selección de 4 clases o cambie la decisión.}
+
+De acuerdo al histograma de índices de nivel para el ACM de las razas de perros (figura \ref{hist}), se puede observar que la mejor altura para el corte del árbol es cuando el valor del índice es 0.1. Es decir, el mayor salto en el histograma de los índices de nivel se observa cuando la inercia-entre está  alrededor de 0.1, a esta altura del árbol (figura \ref{arb}) se pueden definir claramente 4 clases para agrupar las razas de perros, la cual sería la partición de mejor calidad. Lo anterior indica que en la agrupación anterior las clases estaban próximas, y luego de esta partición los grupos se encuentran necesariamente alejados (se incrementa la inercia-entre), y se pueden por tanto, diferenciar claramente las agrupaciones para las razas de perros.
+
+\begin{figure}[H]
+  \centering
+<<fig=true, echo=false, height=4.2>>==
+par(mai=c(0.5,0.5,0,0.5))
+barplot(sort(fc$indices$Indice, decreasing=TRUE), cex.axis = 0.6)
+abline(0.1, 0, col="blue")
+@
+  \caption{Histograma de índices}\label{hist}
+  \end{figure}
+  
+%4. 
+\section{Para la partición en cuatro clases deduzca la inercia entre clases a partir de los
+Índices de nivel.}
+
+\begin{center}
+Inercia entre = Inercia total - inercia intra\\
+Inercia entre = 1.6667 - 0.073\\
+Inercia entre = 0.9366
+\end{center}
+
+%5. 
+\section{A partir del árbol determine las razas de cada clase.}
+
+Las clases de acuerdo al dendograma (figura \ref{arb}) serían:
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|l|}
+  \hline
+\textbf{Clase} & \textbf{Razas} \\
+  \hline
+Clase 1 & Dogo, Mast, Bulm, Stbe, Tern \\
+\hline
+Clase 2 & Foxh, Galg, Gasc, Podf, Beau, Coll, Sett, Poin, Dobe, Masa \\
+\hline
+Clase 3 & Cock,  Podb, Boxe, Dalm, Labr \\
+\hline
+Clase 4 & Cani, Foxt, Buld, Teck, Bass, Chih, Peki\\
+\hline
+\end{tabular}
+\label{class}
+\end{table}
+
+%7. 
+\section{?`Qué porcentaje de inercia explica la clasificación?}
+
+<<results=hide, echo=false>>==
+sum(fc$indices$Indice[c(24,25,26)])/sum(acm$eig)*100
+@
+
+El porcentaje de inercia que explica la clasificación en 4 clases sería:\\
+
+$ \frac{\text{Inercia-entre}}{\text{Inercia total}}\cdot 100 = \frac{0.9376}{1.6667}\cdot 100 = 56.25487 $\\
+
+El porcentaje de inercia total que explica la partición en 4 clases corresponde al 56.3\% de la inercia total.
+
+%8. 
+\section{Resuma las características de cada una de las clases.}
+
+<<results=tex, echo=false>>==
+#Caracterización razas - variables cualitativas
+xtable(list.to.data(fc$carac.cate), label="carac", caption="Caracterización de las razas de perros por clase según variables cualitativas")
+@
+
+En la figura \ref{perf} se observa la asociación entre cada una de las variables cualitativas y la partición de las razas en cuatro clases, es decir, los perfiles fila de las razas de perros para cada variable, según los grupos formados.
+
+En el grupo 1 se encuentran las razas de tamaño pequeño y peso ligero, poco veloces, muy afectivos y poco agresivos, y de inteligencia mediana a baja.\\
+El grupo 2 se encuentra conformado por las razas de mayor tamaño y peso mediano, de gran agilidad y velocidad, pero afectividad baja. Así mismo, se encuentran razas de inteligencia alta, media y baja, y de agresividad tanto alta como baja.\\
+En el grupo 3 las razas son de tamaño mediano, peso mediano, velocidad media, inteligencia media, afectividad alta y agresividad mixta.\\
+En el grupo 4 están las razas de tamaño grande, peso alto, poco veloces, inteligencia mixta, afectividad baja y alta agresividad.\\
+
+
+\begin{figure}[t]
+  \centering
+<<fig=true, echo=false>>==
+par(mfrow=c(3,2))
+for (col in colnames(y)){
+  tc<-table(y[,col],fc$cluster)
+  plotct(tc, "col", col=c("blue","orange","white"), main=col, leyend.text=TRUE)
+}
+@
+  \caption{Perfiles fila para las razas de perros según sus características y los grupos formados}\label{perf}
+  \end{figure}
+
+Adicionalmente, de acuerdo al gráfico de asociación entre clases y variables cualitativas de las razas (Fig. \ref{perf}) así como al ordenamiento de valores test de las categorías de dichas variables (Cuadro \ref{carac}) se obtiene:
+
+\begin{itemize}
+  \item La clase 1 contiene al 26\% de las razas, los perros son de tamaño pequeño y peso ligero, con tendencia a poca velocidad.
+  \item La clase 2 representa al 37\% de las razas de perros, se encuentra conformado por organismos de mayor tamaño y peso mediano, de gran agilidad y velocidad.
+  \item En la clase 3 se encuentran el 18\% de las razas, las cuales son de tamaño mediano, velocidad media y afectividad alta.
+  \item La clase 4 contiene el restante 18\% de razas de perros los cuales se caracterizan por tener tamaño grande, peso alto y afectividad baja. 
+\end{itemize}
+\\
+En general, la mayoría de las razas analizadas son de gran tamaño (55.6\%) y peso medio (51.9\%).
+
+
+A continuación se presenta el índice de asociación entre la clasificación y las variables cualitativas:
+<<results=tex, echo=false>>==
+xtable(round(chisq.carac(y, fc$cluster),3))
+@
+
+\\Las variables con mayor índice de asociación son tamaño y peso, indicando que son las mejores discriminatorias para clasificar las razas en los grupos. Aunque la inteligencia y la agresividad a menudo se pueden asociar más con unas razas de perros que con otras, según este índice no son determinantes de la agrupación propuesta.
+
+
+%9. 
+\section{Comente el primer plano factorial del ACM incluyendo las clases obtenidas (centros de gravedad y distinción de las razas de cada clase).}
+
+\begin{figure}[ht]
+  \centering
+<<fig=true, echo=false>>==
+mycolors<-colors()[c(26 ,32 ,52 ,57 ,73 ,74 ,81 ,84 ,88 ,100)]
+plotFactoClass (fc, cstar =0, Trow =FALSE, cframe =1.05, col.row = mycolors ,
+col.col=" black ")
+@
+  \caption{Proyección de clases sobre el primer plano factorial del ACM de las razas de perros}\label{plano1}
+\end{figure}
+
+Como se observa en la figura correspondiente al primer plano factorial (figura \ref{plano1}), el centro de gravedad de la clase 2 es el más cercano al primer eje en el primer plano factorial, comparte con la clase 4 talla, velocidad y agresividad altas y afectividad baja, difieren en la inteligencia y el peso; las características que comparten son totalmente contrastantes a las de la clase 1. Los razas asociadas a las clases 2 y 4 se observan fuertemente atraídas por sus respectivos centros de gravedad, lo cual también se refleja en el valor de su inercia (0.085 y 0.079 respectivamente), mientras que las razas asociadas a las clases 1 y 2 se observan más dispersas de su centro de gravedad y presentan los valores más bajos de inercia (0.0494 y 0.0693 respectivamente).
+
+%10. 
+\section{Haga un resumen del análisis que responda a los objetivos del ejercicio.}
+
+De entrada el ACM en su histograma de inercias permite conocer que existen tres puntos de divergencia entre las razas, y posteriormente la clasificación obtenida presenta a los cuatro grupos que retienen al 83\% de la variabilidad. Esto significa que las características evaluadas logran definir grupos de razas, principalmente con respecto a las variables de talla, peso y velocidad en una muy buena aproximación estadística. De acuerdo a estos rasgos, validados por tener una alta asociación con las razas de perros y su relación con la variable indicativa función, es posible seleccionar razas de perros de acuerdo con su función:\\
+
+\begin{itemize}
+  \item De compañía: razas pequeñas y de baja velocidad.
+  \item De utilidad: razas medianas, de gran peso y  gran velocidad.
+  \item De caza: razas grandes, de peso medio y gran velocidad.
+\end{itemize}
+
+
+\end{document}

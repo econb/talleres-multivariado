@@ -1,0 +1,204 @@
+\documentclass{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{array}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+
+\title {Análisis Multivariado\\Taller No. 3: Ejemplo Lactantes\\Parte No. 2}
+\author {Laura Elizabeth Holguín\\Eduardo Contreras Bohórquez\\Diana Catalina Martínez}
+\date{}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\section{Preguntas de lectura en el ejemplo lactantes}
+%1
+\subsection{?`El ACP realizado es normado o no normado?}
+
+<<echo=false, results=hide>>==
+library(FactoClass)
+library(ISwR)
+data(kfm)
+Y <- kfm[,-c(1,3)]
+n <-nrow(Y);
+@
+
+El ACP realizado es normado. Teniendo en cuenta que las variables de los datos de lactantes presentan distintas escalas, por ejemplo \textit{ml.supply} tiene un rango de 0 a 590 ml/24h, mientras que \textit{dl.milk} de 4.4 a 10.4 dl/24h, por tanto al realizar el análisis con el ACP normado se elimina la influencia de las unidades de medida.
+
+%2
+\subsection{Primer valor propio}
+
+<<echo=false, results=hide>>==
+acp<- dudi.pca(Y, scannf=FALSE, nf=2)
+barplot(acp$eig)
+mean(acp$eig)
+iner<-inertia.dudi(acp,,T)
+iner$TOT
+@
+
+El primer valor propio para el ACP es $\Sexpr{round(acp$eig[1],2)}$.
+
+%3
+\subsection{Primer vector propio:}
+<<echo=false, results=hide>>==
+v<-cor(Y)
+eig<-eigen(v)
+@
+El primer vector propio estaría dado por:
+<<echo=false, results=tex>>==
+xtable(data.frame(t(eig$vectors[,1])), digits=3)
+@
+
+%4
+\subsection{Porcentajes de la inercia en: primer eje , segundo eje y primer plano factorial}
+<<echo=false, results=hide>>==
+iner$TOT
+plot.dudi(acp, ex=1, ey=2)
+@
+En el primer eje se acumula 49.49\% de la inercia, en el segundo 21.41\% y en el primer plano factorial 70.90\%.
+
+%5
+\subsection{Correlación entre tetero y primer factor:}
+La correlación sería $\Sexpr{round(acp$co[3,1],4)}$, la cual corresponde a la coordenada de tetero en el primer eje factorial. Esta correlación es casi nula indicando que el consumo de tetero no está asociado con el primer eje.
+<<echo=false, results=hide>>==
+acp$co
+@
+
+%6
+\subsection{Variable que más contribuye al primer eje:}
+<<echo=false, results=hide>>==
+iner$col.abs
+plot.dudi(acp,Trow=F,ex=1,ey=2)
+s.corcircle(acp$co)
+acp$co
+@
+La variable que más contribuye es \textit{dl.milk}, la cual tiene una contribución al primer eje de 27.35\%, dado que esta variable es la que tiene la mayor correlación con el eje 1.
+
+%7
+\subsection{Las dos variables menos correlacionadas con tetero son:}
+<<echo=false, results=tex>>==
+xtable(cor(Y), digits=3)
+@
+De acuerdo a la matriz de correlaciones, las variables menos correlacionadas con tetero son \textit{dl.milk} y \textit{mat.weight}, indicando que el consumo de tetero no está asociado con el consumo de leche materna ni con el peso de la madre.
+
+%8
+\subsection{Variable mejor representada en el primer plano factorial:}
+<<echo=false, results=tex>>==
+xtable(iner$col.cum)
+@
+De acuerdo al cuadro de contribuciones relativas acumuladas, la variable tetero (\textit{ml.suppl}) es la que está mejor representada en el primer plano factorial, puesto que esta variable es la que tiene la mayor contribución relativa al plano, es decir 97.2\%. En particular, este valor se debe a que esta variable tiene muy buena calidad de proyección en el eje 2 (96.4\%).
+
+%9
+\subsection{Características del bebé promedio}
+De acuerdo al centro de gravedad, el bebé promedio consume 7,5 dl de leche al día, pesa 5,3 kg, toma 96 ml de tetero al día, y su madre tiene un peso de 59 kg y una estatura de 1,67 cm.
+<<echo=false, results=tex>>==
+xtable(data.frame(t(colMeans(Y))))
+@
+
+%10
+\subsection{Coordenadas del bebé promedio sobre el primer plano factorial:}
+El bebé promedio queda en la coordenada (0,0) del primer plano factorial (figura \ref{plano1}).
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>==
+plot(acp$li)
+abline(h=0, v=0)
+@
+\caption{Primer plano factorial para lactantes. El bebé promedio equivale a la coordenada (0,0).}
+\label{plano1}
+\end{figure}
+
+%11
+\subsection{Los dos bebés que más tetero consumen son}
+
+<<echo=false, results=tex>>==
+xtable(Y[c(32,10),], caption="Bebés que consumen más tetero.", label="gml")
+@
+
+Los bebés que más consumen tetero se encuentran resaltados en la figura \ref{fig_tetero} en color azul, los cuales se ubican en el lado positivo del eje 2 del plano factorial, y son los más alejados del centro de gravedad. Estos bebés tienen un peso similar (5.336 kg y 5.588 kg), y el peso de la madre es igual para los dos (58 kg), de acuerdo al cuadro \ref{gml}.
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=false>>==
+plot(acp$li)
+points(acp$li[c(32,10),], col="blue", pch=16)
+points(acp$li[c(20,23,26,7),], col="red", pch=16)
+abline(h=0, v=0)
+@
+\caption{Primer plano factorial resaltando los bebés que más consumen tetero (en azul) y los que más consumen leche materna (en rojo).} \label{fig_tetero}
+\end{figure}
+
+%12
+\subsection{Los cuatro bebés que más leche materna consumen son}
+<<echo=false, results=tex>>==
+xtable(Y[c(20,23,26,7),], caption="Bebés que consumen más leche materna", label="leche")
+@
+Los bebés que consumen más leche materna se encuentran resaltados en rojo en la figura \ref{fig_tetero}. Estos bebés se ubican en el lado negativo del primer eje. Así mismo, el bebé que mayor consumo de leche materna tiene es el que se encuentra más alejado del centro de gravedad. Adicionalmente, el peso promedio de los bebés con mayor consumo de leche materna es superior al de los bebés con mayor consumo de tetero.
+
+\section{Cálculos en el ejemplo de lactantes}
+
+%1
+\subsection{Para el bebé situado en el extremo superior del primer plano factorial escriba las
+coordenadas sobre los dos primeros ejes factoriales}
+
+Según la figura \ref{fig_tetero}, el bebé situado en el extremo superior del primer plano factorial tiene siguientes coordenadas: 
+<<echo=false, results=tex>>==
+xtable(acp$li[10,])
+@
+
+%2
+\subsection{Escriba el peso del punto que representa al bebé anterior}
+El peso del punto del bebé anterior en el plano factorial es 0.02, teniendo en cuenta que en total son 50 bebés y todos los puntos tienen el mismo peso en el plano factorial.
+
+%3
+\subsection{Calcule la contribución del bebé anterior a la inercia del segundo eje factorial}
+
+<<echo=false, results=hide>>==
+inerr<-inertia.dudi(acp,T,)
+inerr$row.abs[10,]
+colSums(inerr$row.abs)
+ord2 <-order(inerr$row.abs[,2], decreasing=TRUE); Y[ord2,]
+@
+
+El bebé en el extremo superior del primer plano factorial tiene una contribución del $\Sexpr{round(inerr$row.abs[10,2],2)}$\% al segundo eje factorial. En particular, este bebé es el segundo con mayor consumo de tetero.
+
+%4
+\subsection{y la calidad de representación sobre el primer plano factorial}
+Este bebé tiene una calidad de representación del 98.57\% en el primer plano factorial. En particular, es uno de los que mejor están representados en este plano.
+
+\clearpage
+
+%5
+\subsection{Escriba las coordenadas de los antiguos ejes unitarios de las variables leche y tetero
+sobre el primer plano factorial}
+Las coordenadas son:
+<<echo=false, results=tex>>==
+print(xtable(acp$c1[c(1,3),], table.placement="H"))
+@
+
+%6
+\subsection{Dibuje los antiguos ejes de leche y tetero sobre el primer plano factorial, indicando
+los lados positivos y negativos.}
+La figura \ref{old_axis} muestra los antiguos ejes de las variables leche materna y tetero, sobre el primer plano factorial. \textit{dl.milk} se encuentra en en dirección al lado negativo del eje 1 y \textit{ml.suppl} en dirección al lado positivo del eje 2.
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=false>>==
+plot(acp, Tcol=FALSE ) # individuos sobre el primer plano
+# adición de antiguos ejes unitarios
+s.arrow(acp$c1[c(1,3),],add.plot=TRUE, clabel=0.6)
+@
+\caption{Antiguos ejes de leche y tetero sobre el primer plano factorial} \label{old_axis}
+\end{figure}
+\end{document}

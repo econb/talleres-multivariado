@@ -1,0 +1,394 @@
+\documentclass{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{array}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+
+\title {Análisis Multivariado\\Taller No. 6: ACM para las razas de perros}
+\author {Laura Elizabeth Holguín\\Eduardo Contreras Bohórquez\\Diana Catalina Martínez}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\section{A partir del archivo de datos responda:}
+\subsection*{a) ?`Cuáles son las características del perro CANI?}
+El perro CANI tiene las siguientes caracterísiticas:\\
+
+<<results=tex, echo=FALSE>>==
+library(FactoClass)
+data(BreedsDogs)
+cani<-BreedsDogs[6,]
+xtable(cani)
+y<-BreedsDogs[,-7]
+Z <-acm.disjonctif(y)
+@
+
+Es decir, es un perro pequeño, de velocidad media pero de gran inteligencia, noble y cariñoso.
+
+\subsection*{b) Identifique los pares de razas (``individuos") que presentan características idénticas.}
+
+<<results=HIDE,fig=FALSE, echo=FALSE>>==
+n <-nrow (Z); Dp <-diag ( colSums (Z)); s <-ncol (y)
+X <-sqrt (n/s)*as.matrix(Z)%*%solve ( sqrt (Dp))
+selin <-seq (2 ,27 ,2)
+data.frame(nrow(X), rownames(X))
+Dis<-dist(X[c(selin,7,17),])
+round (Dis ,1)
+d<-as.matrix(round(Dis,1))
+xtable(d)
+eq<-which(d==0, arr.ind=TRUE, useNames = TRUE)#Para identificar los valores para los cuales dist=0
+@
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrrrrrrrrrrrr}
+  \hline
+ & beau & buld & cani & cock & dalm & dogo & foxt & gasc & masa & peki & podf & sett & teck & chih & labr \\ 
+  \hline
+beau & 0.00 & 1.90 & 2.20 & 1.70 & 1.70 & 1.70 & 1.70 & 1.60 & 1.00 & 2.10 & 1.50 & 1.20 & 1.90 & 2.10 & 1.70 \\ 
+  buld & 1.90 & 0.00 & 1.50 & 1.50 & 1.90 & 2.40 & 1.30 & 2.30 & 2.10 & 1.00 & 1.90 & 1.90 & \textbf{0.00} & 1.00 & 1.90 \\ 
+  cani & 2.20 & 1.50 & 0.00 & 2.10 & 1.90 & 2.50 & 1.30 & 2.10 & 1.90 & 1.50 & 1.90 & 2.20 & 1.50 & 1.50 & 1.90 \\ 
+  cock & 1.70 & 1.50 & 2.10 & 0.00 & 1.60 & 2.30 & 1.60 & 2.20 & 2.00 & 1.80 & 2.10 & 2.10 & 1.50 & 1.80 & 1.60 \\ 
+  dalm & 1.70 & 1.90 & 1.90 & 1.60 & 0.00 & 2.40 & 1.80 & 1.90 & 2.00 & 2.10 & 1.40 & 1.70 & 1.90 & 2.10 & \textbf{0.00} \\ 
+  dogo & 1.70 & 2.40 & 2.50 & 2.30 & 2.40 & 0.00 & 2.20 & 1.50 & 1.80 & 2.20 & 2.00 & 1.70 & 2.40 & 2.20 & 2.40 \\ 
+  foxt & 1.70 & 1.30 & 1.30 & 1.60 & 1.80 & 2.20 & 0.00 & 1.80 & 2.00 & 1.60 & 1.80 & 2.10 & 1.30 & 1.60 & 1.80 \\ 
+  gasc & 1.60 & 2.30 & 2.10 & 2.20 & 1.90 & 1.50 & 1.80 & 0.00 & 1.70 & 2.00 & 1.30 & 1.60 & 2.30 & 2.00 & 1.90 \\ 
+  masa & 1.00 & 2.10 & 1.90 & 2.00 & 2.00 & 1.80 & 2.00 & 1.70 & 0.00 & 2.20 & 1.90 & 1.60 & 2.10 & 2.20 & 2.00 \\ 
+  peki & 2.10 & 1.00 & 1.50 & 1.80 & 2.10 & 2.20 & 1.60 & 2.00 & 2.20 & 0.00 & 2.10 & 2.10 & 1.00 & \textbf{0.00} & 2.10 \\ 
+  podf & 1.50 & 1.90 & 1.90 & 2.10 & 1.40 & 2.00 & 1.80 & 1.30 & 1.90 & 2.10 & 0.00 & 1.00 & 1.90 & 2.10 & 1.40 \\ 
+  sett & 1.20 & 1.90 & 2.20 & 2.10 & 1.70 & 1.70 & 2.10 & 1.60 & 1.60 & 2.10 & 1.00 & 0.00 & 1.90 & 2.10 & 1.70 \\ 
+  teck & 1.90 & \textbf{0.00} & 1.50 & 1.50 & 1.90 & 2.40 & 1.30 & 2.30 & 2.10 & 1.00 & 1.90 & 1.90 & 0.00 & 1.00 & 1.90 \\ 
+  chih & 2.10 & 1.00 & 1.50 & 1.80 & 2.10 & 2.20 & 1.60 & 2.00 & 2.20 & \textbf{0.00} & 2.10 & 2.10 & 1.00 & 0.00 & 2.10 \\ 
+  labr & 1.70 & 1.90 & 1.90 & 1.60 & \textbf{0.00} & 2.40 & 1.80 & 1.90 & 2.00 & 2.10 & 1.40 & 1.70 & 1.90 & 2.10 & 0.00 \\ 
+   \hline
+\end{tabular}
+\caption{Distancia entre algunas razas de perros (asociada al ACM)}\label{dist}
+\end{table}
+
+De acuerdo a la tabla \ref{dist} se encontró que los pares de razas que presentan razgos iguales son:\\ 
+\begin{center}
+(teck, buld)\\
+(peki, chih)\\
+(dalm, labr)\\
+\end{center}
+
+\section{Construya la tabla disyuntiva completa (TDC) y observándola responda:}
+
+<<results=HIDE, figure=FALSE, echo=FALSE>>==
+Z<-acm.disjonctif(y)
+@
+
+\subsection*{a) ?`Qué categorías presenta la raza Boxer para cada una de las variables?}
+
+Los perros de raza Boxer presentan tamaño, peso, velocidad e inteligencia medios, afectividad y agresividad altas.
+
+\begin{center}
+<<results=tex, echo=FALSE>>==
+# Para tabla de datos (variables indicadoras)
+#y[3,]#Raza Bóxer
+xtable(t(Z[3,]))
+@
+\end{center}
+
+\subsection*{b) ?`Cuántas razas de perros se caracterizan por poseer una inteligencia media y cuáles son?}
+
+13 razas de perros presentan inteligencia media:
+Beau, boxe, buld, cock, coll, dalm, foxt, labr, podf, sett, stbe, teck, tern
+
+%3
+\section{Construya la tabla de Burt (se puede pedir en el ACM) y observándola responda:}
+
+<<results=hide, echo=FALSE>>==
+B<-acm.burt(y,y)
+xtable(B)
+@
+
+\begin{table}[b]
+\centering
+\begin{adjustbox}{width=1\textwidth}
+\small
+\begin{tabular}{|r|rrr|rrr|rrr|rrr|rr|rr|}
+  \hline
+  & \multicolumn{3}{c}{Tamaño} & \multicolumn{3}{|c}{Peso} & \multicolumn{3}{|c}{Velocidad} & \multicolumn{3}{|c}{Inteligencia} & \multicolumn{2}{|c}{Afectividad} & \multicolumn{2}{|c|}{Agresividad}\\
+  \hline
+ & lar & med & sma & hea & lig & med & hig & low & med & hig & low & med & hig & low & hig & low \\ 
+  \hline
+SIZE.lar & 15.00 & 0.00 & 0.00 & 5.00 & 0.00 & 10.00 & 9.00 & 4.00 & 2.00 & 4.00 & 5.00 & 6.00 & 3.00 & 12.00 & 9.00 & 6.00 \\ 
+  SIZE.med & 0.00 & 5.00 & 0.00 & 0.00 & 1.00 & 4.00 & 0.00 & 1.00 & 4.00 & 1.00 & 0.00 & 4.00 & 5.00 & 0.00 & 2.00 & 3.00 \\ 
+  SIZE.sma & 0.00 & 0.00 & 7.00 & 0.00 & 7.00 & 0.00 & 0.00 & 5.00 & 2.00 & 1.00 & 3.00 & 3.00 & 6.00 & 1.00 & 2.00 & 5.00 \\ 
+  WEIG.hea & 5.00 & 0.00 & 0.00 & 5.00 & 0.00 & 0.00 & 1.00 & 4.00 & 0.00 & 1.00 & 2.00 & 2.00 & 0.00 & 5.00 & 4.00 & 1.00 \\ 
+  WEIG.lig & 0.00 & 1.00 & 7.00 & 0.00 & 8.00 & 0.00 & 0.00 & 6.00 & 2.00 & 1.00 & 3.00 & 4.00 & 7.00 & 1.00 & 3.00 & 5.00 \\ 
+  WEIG.med & 10.00 & 4.00 & 0.00 & 0.00 & 0.00 & 14.00 & 8.00 & 0.00 & 6.00 & 4.00 & 3.00 & 7.00 & 7.00 & 7.00 & 6.00 & 8.00 \\ 
+  SPEE.hig & 9.00 & 0.00 & 0.00 & 1.00 & 0.00 & 8.00 & 9.00 & 0.00 & 0.00 & 3.00 & 3.00 & 3.00 & 3.00 & 6.00 & 5.00 & 4.00 \\ 
+  SPEE.low & 4.00 & 1.00 & 5.00 & 4.00 & 6.00 & 0.00 & 0.00 & 10.00 & 0.00 & 1.00 & 4.00 & 5.00 & 5.00 & 5.00 & 5.00 & 5.00 \\ 
+  SPEE.med & 2.00 & 4.00 & 2.00 & 0.00 & 2.00 & 6.00 & 0.00 & 0.00 & 8.00 & 2.00 & 1.00 & 5.00 & 6.00 & 2.00 & 3.00 & 5.00 \\ 
+  INTE.hig & 4.00 & 1.00 & 1.00 & 1.00 & 1.00 & 4.00 & 3.00 & 1.00 & 2.00 & 6.00 & 0.00 & 0.00 & 3.00 & 3.00 & 3.00 & 3.00 \\ 
+  INTE.low & 5.00 & 0.00 & 3.00 & 2.00 & 3.00 & 3.00 & 3.00 & 4.00 & 1.00 & 0.00 & 8.00 & 0.00 & 2.00 & 6.00 & 5.00 & 3.00 \\ 
+  INTE.med & 6.00 & 4.00 & 3.00 & 2.00 & 4.00 & 7.00 & 3.00 & 5.00 & 5.00 & 0.00 & 0.00 & 13.00 & 9.00 & 4.00 & 5.00 & 8.00 \\ 
+  AFFE.hig & 3.00 & 5.00 & 6.00 & 0.00 & 7.00 & 7.00 & 3.00 & 5.00 & 6.00 & 3.00 & 2.00 & 9.00 & 14.00 & 0.00 & 5.00 & 9.00 \\ 
+  AFFE.low & 12.00 & 0.00 & 1.00 & 5.00 & 1.00 & 7.00 & 6.00 & 5.00 & 2.00 & 3.00 & 6.00 & 4.00 & 0.00 & 13.00 & 8.00 & 5.00 \\ 
+  AGGR.hig & 9.00 & 2.00 & 2.00 & 4.00 & 3.00 & 6.00 & 5.00 & 5.00 & 3.00 & 3.00 & 5.00 & 5.00 & 5.00 & 8.00 & 13.00 & 0.00 \\ 
+  AGGR.low & 6.00 & 3.00 & 5.00 & 1.00 & 5.00 & 8.00 & 4.00 & 5.00 & 5.00 & 3.00 & 3.00 & 8.00 & 9.00 & 5.00 & 0.00 & 14.00 \\ 
+   \hline
+\end{tabular}
+\end{adjustbox}
+\caption{Tabla de Burt para el análisis de razas de perros} \label{burt}
+\end{table}
+
+\subsection*{a) ?`Cómo se distribuyen las razas de perros según la variable peso?}
+
+<<results=tex, echo=FALSE>>==
+xtable(B[c(4,5,6),c(4,5,6)], caption='Distribución de los perros según la variable peso', label='peso')
+@
+De acuerdo a la tabla \ref{peso}, se puede concluir que la mayoría de razas de perros presentan peso medio; las razas menos frecuentes son las de peso alto.
+
+
+\subsection*{b) ?`Cuántas razas de perros son muy inteligentes y poco afectuosos?}
+Tres razas de perros son perspicaces pero poco cariñosos: bulm, dobe, poin
+
+\subsection*{c) ?`Cuántas razas de perros tienen inteligencia media o superior y gran tamaño?}
+Las razas que se caracterizan por tener una inteligencia media y grandes son 6: Beau, Coll, Dobe, Podf, Sedt, Stbe y Tern
+Por su parte, las razas más perspicaces y de gran tamaño son cuatro: bulm, dobe, masa, poin.
+
+\section{?`Cuántos ejes factoriales considera razonable interpretar?}
+
+<<results=hide, echo=false>>==
+#ACM para razas de perros
+acm <- dudi.acm(y, scannf=FALSE, nf=3)
+mean(acm$eig)
+acm$eig
+iner <- inertia.dudi(acm,,T)
+# criterio de Benzécri
+s <-6; 1/s
+# --> se calcula tau para los primeros 11 ejes
+eig <-acm$eig
+tau <-(s/(s-1))^2*(eig -(1/s))^2
+ptau <-tau/sum (tau)*10
+barplot(ptau,las =3)
+@
+
+\begin{figure}[ht]
+\centering
+<<results=hide, echo=FALSE, fig=TRUE, height=3.9, width=9>>==
+par(mfrow=c(1,2))
+barplot(acm$eig, cex.axis=0.6, horiz = TRUE)
+barplot(ptau,las =3, horiz = TRUE)
+@
+\caption{Histogramas de valores propios del ACM de razas de perros (a la izquierda) y del criterio de Benzecri (derecha)}\label{hist}
+\end{figure}
+
+De acuerdo al histograma de inercia por ejes (figura \ref{hist}), se decide usar solo los dos primeros, ya que sobresalen los dos primeros valores propios y éstos podrían contener la información necesaria para el análisis, a pesar de que retienen el 51,98\% (ver cuadro \ref{valp}). Así mismo, al considerar el criterio de Benzecri, los primeros dos valores propios hallados de acuerdo al criterio tienen un valor superior a 1/s (0,16).
+
+\begin{center}
+<<results=tex, echo=false>>==
+xtable(round(iner$TOT,2), caption="Tabla de valores propios del ACM de razas de perros", label="valp")
+@
+\end{center}
+
+%5. 
+\section{?`Cuáles son las categorías que constituyen el primer eje? (contribución mayor que el promedio)}
+
+<<results=hide, echo=false>>==
+iner <- inertia.dudi(acm,,T)
+cora<-round(acm$co[,c(1,2)],2)
+contc<-round(iner$col.abs[,c(1,2)],2)
+cose<-round(iner$col.rel[,c(1,2)],2)
+mean(iner$col.abs[,1])
+tab<-cbind(cora,contc,cose)
+tab
+xtable(tab)
+@
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|r|rr|rr|rr|}
+  \hline
+ & \multicolumn{2}{c|}{Coordenadas} & \multicolumn{2}{c|}{Contribuciones absulutas} & \multicolumn{2}{c|}{Contribuciones relativas}\\
+  \hline
+ & Comp1 & Comp2 & Axis1(\%) & Axis2(\%) & Axis1 & Axis2 \\ 
+  \hline
+SIZE.lar & 0.84 & 0.02 & 13.46 & 0.01 & 87.50 & 0.05 \\ 
+  SIZE.med & -0.85 & 1.23 & 4.64 & 12.17 & -16.46 & 34.48 \\ 
+  SIZE.sma & -1.18 & -0.92 & 12.60 & 9.59 & -49.14 & -29.88 \\ 
+  WEIG.hea & 1.02 & -0.97 & 6.60 & 7.61 & 23.42 & -21.56 \\ 
+  WEIG.lig & -1.17 & -0.82 & 14.01 & 8.72 & -57.53 & -28.61 \\ 
+  WEIG.med & 0.31 & 0.82 & 1.67 & 15.06 & 10.04 & 72.21 \\ 
+  SPEE.hig & 0.89 & 0.37 & 9.18 & 2.00 & 39.79 & 6.91 \\ 
+  SPEE.low & -0.32 & -1.04 & 1.31 & 17.52 & -6.02 & -64.22 \\ 
+  SPEE.med & -0.60 & 0.89 & 3.74 & 10.12 & -15.34 & 33.19 \\ 
+  INTE.hig & 0.34 & 0.46 & 0.86 & 2.03 & 3.21 & 6.03 \\ 
+  INTE.low & 0.35 & -0.81 & 1.25 & 8.39 & 5.13 & -27.53 \\ 
+  INTE.med & -0.37 & 0.29 & 2.27 & 1.70 & -12.67 & 7.57 \\ 
+  AFFE.hig & -0.78 & 0.27 & 10.79 & 1.60 & -64.77 & 7.67 \\ 
+  AFFE.low & 0.84 & -0.29 & 11.62 & 1.72 & 64.77 & -7.67 \\ 
+  AGGR.hig & 0.43 & -0.21 & 3.10 & 0.91 & 17.29 & -4.06 \\ 
+  AGGR.low & -0.40 & 0.19 & 2.88 & 0.85 & -17.29 & 4.06 \\ 
+   \hline
+\end{tabular}
+\caption{Tabla de coordenadas y contribuciones (absolutas y relativas) por categorías del ACM de razas de perros a los ejes}\label{cont}
+\end{table}
+
+El primer eje está constituido por las categorías extremas de las variables ordinales las cuales presentan mayores valores de contribución. Según la tabla \ref{cont}, las variables que más contribuyen a este eje son:\\
+\begin{center}
+SIZE.lar\\
+SIZE.sma\\
+WEIG.hea\\
+WEIG.lig\\
+SPEE.hig\\
+AFFE.hig\\
+AFFE.low
+\end{center}
+\\
+Con respecto a las variables afecto, peso y talla se organiza el eje 1 del primer plano factorial, lo cual podría indicar que estas categorías son un rasgo fundamental para diferenciar tanto razas de perros como posibles funciones.  En menor grado, la categoría agresividad se encuentra representando este mismo eje. Se observa en este sentido que perros de mayor tamaño y peso tienden a ser menos afectivos que los pequeños.
+
+%6
+\section{?`Qué categorías tienen coordenadas importantes en el primer eje y de qué signos son las mismas?}
+
+\begin{figure}[ht]
+\centering
+<<fig=true, echo=false>>==
+plot.dudi(acm, Trow=FALSE, ex=1, ey=2)
+@
+\caption{Primer plano factorial del ACM para las razas de perros}\label{plano1}
+\end{figure}
+
+De acuerdo a la figura \ref{plano1}, y a la tabla \ref{cont} en el lado positivo del eje 1, las categorías más importantes son: \\
+WEIG.hea, SPEE.hig, SIZE.lar y AFFE.low;
+
+Mientras que en el lado negativo, las categorías de mayor importancia son: 
+WEIG.lig y SIZE.sma, SIZE.med
+
+Es decir, el primer eje contrapone principalmente las categorías peso, tamaño y afectividad de los perros.  En el lado negativo se encuentran los perros livianos, pequeños y cariñosos, mientras que en el lado positivo se encuentran los perros grandes, de mayor peso y poco afectivos.
+
+%7
+\section{?`Cuáles son las razas que se encuentran más alejadas del origen? ?`Cuáles son sus coordenadas sobre el primer eje?}
+
+<<results=hide, echo=false>>==
+coord<-round(acm$li[c("peki","chih","dalm","labr"),c(1,2)],2)
+#disor<-round(sqrt(acm$li[,1]**2 + acm$li[,2]**2),2)
+#co1<-cbind(coord, disor)
+#colnames(co1)<-c("Eje 1", "Eje 2", "Dist Origen")
+#co1
+mean(acm$li[,1])
+@
+
+Las razas que se encuentran más alejadas del promedio son:
+
+\begin{center}
+<<results=tex, echo=false>>==
+xtable(coord)#, caption = 'Coordenadas de las razas más alejadas del origen', label='coora')
+@
+\end{center}
+
+%8 
+\section{?`Cuáles son las categorías más contributivas al segundo eje?}
+
+Las categorías más contributivas al segundo eje son SPEE.low, WEIG.med, WEIG.hea, SPEE.med, SIZE.med. 
+
+Por otro lado, en la figura \ref{plano1} se puede apreciar que las categorías como velocidad, inteligencia y agresividad están contrapuestas por el eje 2. Es decir, las razas de perros más veloces, agresivas e inteligentes se encuentran en el lado positivo del eje, mientras que en el lado negativo se encuentran las razas más nobles, menos inteligentes y menos ágiles.
+
+%9
+\section{Observando la coordenada de la categoría baja de la característica observada velocidad. ?`En qué dirección del segundo eje se encontrarían los perros poco veloces?}
+
+Los perros de poca velocidad se encuentran en la parte negativa del eje 2.  Incluso, esta categoría es la que presenta mayor contribución a dicho eje.\\
+
+
+\large{\textbf{Teniendo en cuenta esto y razonando sobre el espacio de los individuos ?`qué razas de perros podrían considerarse poco veloces?}}\\
+ 
+ Los perros que se considerarían poco veloces serían bass, tern, stbe, mast, teck, buld, peki, chih y bulm.
+ 
+%10
+\section{?`Es posible distinguir grupos de categorías en el primer plano factorial?, ?`cuántos grupos?, ?`qué categorías integran cada uno de ellos?}
+
+\begin{figure}[ht]
+\centering
+<<fig=true, echo=false>>==
+plot(acm, Trow = FALSE ,cframe =1, xlim =c ( -1.2 ,0.8) ) # primer plano
+clases<-factor(c("G3","G4","G1","G2","G1","G3","G3","G2","G4","G3","G2","G4","G4","G3","G3","G4"))
+s.class(acm$co, clases, acm$cw, col=c("brown","red","yellow4","orange"),
+          cstar=0, cellipse =0, add.plot = TRUE )
+@
+\caption{Primer plano factorial del ACM mostrando los centros de gravedad de grupos de categorías de las razas de perros (G1 a G4)}\label{pergroup}
+\end{figure}
+
+Como se puede apreciar en la figura \ref{pergroup}, se pueden distinguir los siguientes grupos de categorías de las razas de perros:\\
+
+\begin{center}
+Grupo 1: {WEIG.lig, SIZE.sma}\\
+Grupo 2: {SPEE.low, INTE.low, WEIG.hig}\\
+Grupo 3: {AFFE.low, AGGR.hig, SIZE.lar, SPEE.hig, INTE.hig, WEIG.med} \\
+Grupo 4: {AGGR.low, AFFE.hig, INTE.med, SPEE.med, SIZE.med}\\
+\end{center}
+
+%11. 
+\section{En el gráfico de las categorías activas e ilustrativas (función) sobre el primer plano factorial. ?`A qué grupo de categorías activas se encuentran vinculadas cada una de las categorías de la variable suplementaria?}
+
+\begin{figure}[ht]
+\centering
+<<fig=TRUE, echo=FALSE>>==
+supcar<-supqual(acm, BreedsDogs[,7])
+plot(acm, Trow =FALSE, cframe=1, ylim =c( -1.2 ,1.5) )
+points (supcar$coor,col =" darkgreen ")
+text(supcar$coor, attributes(BreedsDogs[,7])$levels, col =" darkgreen ", pos =1,cex =0.8)
+@
+\caption{Primer plano factorial del ACM por categorías de las razas de perros incluyendo la variable ilustrativa (Función)}\label{ilus}
+\end{figure}
+
+De acuerdo a la figura \ref{ilus}, los perros de compañía se ubican en el grupo de categorías AGGR.low, AFFE.hig, INTE.med, SPEE.med, SIZE.med, y en menor grado las categorías WIEG.lig, SIZE.small y SPEE.low. Tener una afectividad alta y una agresividad baja, así como un tamaño mediano o pequeño, los hace aptos para desempeñar dicha función.
+
+La categoría que indica la función de utilidad se encuentra atraída por las siguientes categorías activas: INTE.hig, WEIG.med, SPEE.hig y SIZE.lar. Esto indica que las razas de perros destinados para caza son generalmente de inteligencia alta, de peso mediano,  tamaño largo y de gran velocidad, lo cual influye en su agilidad para cazar.
+
+Los perros utilitarios se encuentran asociados a las categorías AGRR.hig, AFFE.low y WEIG.hig y SIZE.lar, características de un perro de gran porte, resistente al trabajo pesado y difícil de dominar para propósitos diferentes al que fué criado.
+ 
+%12
+\section{En el gráfico simultáneo de individuos y categorías: ?`qué razas de perros corresponden a cada una de los grupos de categorías identificados?, es decir, ?`qué razas de perros conforman cada grupo?}
+
+\begin{figure}[ht]
+\centering
+<<fig=true, echo=false>>==
+plot(acm, cframe =1, xlim =c ( -1.2 ,0.8) ) # primer plano
+clases<-factor(c("G3","G4","G1","G2","G1","G3","G3","G2","G4","G3","G2","G4","G4","G3","G3","G4"))
+s.class(acm$co, clases, acm$cw, col=c("brown","red","yellow4","orange"),
+           cstar=0, cellipse =0, clabel=0.5, add.plot = TRUE )
+@
+\caption{Primer plano factorial del ACM mostrando los centros de gravedad de grupos de categorías (G1 a G4) y las razas de perros}\label{pergroup2}
+\end{figure}
+
+Las razas que le corresponden a cada grupo que se presentó en el punto anterior son (ver figura \ref{pergroup2}): \\
+
+Grupo 1:Chih, Peki, Buld y Teck.
+
+Grupo 2: Bass, Tern, Stbe, Mast, Bulm
+
+Grupo 3: Dob, Foxh, Masa, Beau, Galg, Gasc, Podf, Poin, Sett, Dogo, Coll.
+
+Grupo 4: Cani, Foxt, Cock, Dalm, Podb, Labr, Boxe
+
+%13
+\section{Para cada grupo de razas de perros que usted ha definido, calcule los perfiles de las características observadas, es decir, ?`cuáles son las características de cada uno de los grupos de razas?}
+
+\textbf{\textit{Grupo 1:}} En este grupo se encuentran las razas Chih, Peki, Buld y Teck. Es decir, estas razas son, en general, de perros pequeños (categorías WEIG.lig, SIZE.sma).
+
+\textbf{\textit{Grupo 2:}} Los perros de este grupo corresponden a las razas Bass, Tern, Stbe, Mast y Bulm. En este caso estos perros son generalmente poco veloces, de poca inteligencia pero de gran peso (categorías SPEE.low, INTE.low, WEIG.hea).
+
+\textbf{\textit{Grupo 3:}} Los perros catalogados en este grupo corresponden a las razas Dob, Foxh, Masa, Beau, Galg, Gasc, Podf, Poin, Sett, Dogo y Coll. Estas razas, de acuerdo a su posición en el plano factorial, son generalmente poco afectivos y muy agresivos, de gran tamaño pero de mediano peso y, por tanto ágiles, veloces y muy perspicaces (categorías AFFE.low, AGGR.hig, SIZE.lar, SPEE.hig, INTE.hig, WEIG.med).
+
+\textbf{\textit{Grupo 4:}} En este grupo aparecen las razas Cani, Foxt, Cock, Dalm, Podb, Labr y Boxe, las cuáles se caracterizan por ser de tamaño mediano, poco agresivas, muy cariñosas pero de inteligencia y velocidad media (categorías AGGR.low, AFFE.hig, INTE.med, SPEE.med, SIZE.med).
+
+ 
+%14
+\section{Compare los perfiles de los grupos de razas y exprese en unas pocas frases las conclusiones.}
+ 
+De acuerdo al análisis realizado, se logró caracterizar las razas de perros que desempeñan alguna función en particular.  Se encontró que los perros de carácter noble, tallas pequeñas a medianas e inteligencia media son adecuados para la compañía, razas tales como Buldog, Teckel, Fox Terrier, entre otros. Los perros con tendencia a la agresividad, de gran tamaño y poca inteligencia son ideales para la función de utilidad en vigilancia y trabajos pesados como carga o arrastre, por ejemplo .  Por último perros de tallas grandes pero pesos medianos, gran inteligencia y velocidad son aptos para la carrera, búsqueda y estrategia, dotaciones de un cazador. 
+
+Por su parte, los perros asociados a las categorías medias de variables como tamaño y velocidad, no se identifican claramente con alguna función particular, puede ser que se asocien con otra diferente o que puedan responder a varias de las planteadas en el ejercicio.
+
+\end{document}

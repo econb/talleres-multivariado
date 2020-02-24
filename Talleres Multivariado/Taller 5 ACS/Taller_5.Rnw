@@ -1,0 +1,394 @@
+\documentclass{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{array}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+
+\title {Análisis Multivariado\\Taller No. 5: ACS de la TC manzanas de Bogotá según localidades y estratos}
+\author {Laura Elizabeth Holguín\\Eduardo Contreras Bohórquez\\Diana Catalina Martínez}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\section{Comente la repartición de las manzanas según estratos (histograma de la distribución
+de las manzanas en los 6 estratos - distribución marginal)}
+
+\begin{figure}[H]
+  \centering
+<<fig=TRUE, echo=FALSE, height=9, width=7>>==
+library(FactoClass)
+data("Bogota")
+tabb2<-plotct(Bogota, "row", col=c("darkgreen","brown","orange","darkblue",
+                                " gray","white","green"), tables=TRUE)
+tabb<-plotct(Bogota[,-1], "row", col=c("brown","orange","darkblue",
+                                        "gray","white","green"), tables=TRUE)
+@
+  \caption{Perfiles de las manzanas en Bogotá según estratos}\label{perfiles}
+\end{figure}
+
+Según el histograma de perfiles por estrato (figura \ref{perfiles}), en la distribución marginal los estratos 2 y 3 son los que más manzanas tienen, es decir, geográficamente Bogotá tiende a concentrar habitantes de clase media-baja. En contraste, los estratos más altos, 4, 5 y 6, son los que están en menor proporción de manzanas. Las manzanas no estratificadas, por su parte, corresponden aproximadamente al 10\% del total de la información. El estrato con menor proporción de manzanas es el 5.
+
+\section{?`Cómo es la distribución de las manzanas según localidades (distribución marginal)?}
+
+\begin{figure}[H]
+  \centering
+<<fig=TRUE, echo=FALSE, height=9, width=7>>==
+tabbc2<-plotct(Bogota, "col", col=colors()[c(1,8,26,32,37,52,57,68,73,74,81,82,84,88,300,635,652,568,640)], tables=TRUE)
+tabbc<-plotct(Bogota[,-1], "col", col=colors()[c(1,8,26,32,37,52,57,68,73,74,81,82,84,88,300,635,652,568,640)], tables=TRUE)#Sin categoría NoSTR
+E<-unclass(table(Bogota))
+@
+  \caption{Perfiles de la distribución de las manzanas en Bogotá según localidades}\label{perfiloc}
+\end{figure}
+  
+Las localidades con mayor proporción de manzanas, de acuerdo al histograma (figura \ref{perfiloc}), son Ciudad Bolívar, Suba y Kennedy, respectivamente. En contraste, la Candelaria, Antonio Nariño y Los Mártires son las localidades con menor proporción de manzanas. En general, ninguna localidad sobrepasa el 12\% de dicha proporción.
+
+\section{?`Utilizaría la columna sin estrato como activa en un análisis de correspondencias?;
+?`Porque sí? ; ?`Por qué no?}
+
+La columna sin estrato corresponde a manzanas que contienen áreas comunes, servicios sociales, entre otros. Aunque dichas zonas podrían estar relacionadas con la estratificación, estas no son relevantes para conocer cómo es la distribución de las localidades y los estratos, así mismo, la distribución de las manzanas no estratificadas no tiene una tendencia clara en las localidades, es decir, ni por perfiles fila ni por columna hay un patrón de dominancia. Por tanto, esta columna no sería utilizada como activa en un análisis de correspondencias, sino como variable ilustrativa.
+
+\section{Compare la estadística chi2 asociada a la tabla de contingencia con la teórica. ?`Hay asociación entre estratos y localidades?}
+
+<<echo=FALSE, results=hide>>==
+B<-as.matrix(Bogota[,-1])
+F <- B/sum(B) #Tabla de frecuencias
+Dn <- diag(rowSums(B)) #Diagonal fila
+perfilFil <- solve(Dn)%*%B #Perfil fila
+Dp <- diag(colSums(B)) #Diagonal columna
+perfilCol <- B%*%solve(Dp) #Perfil columna
+#Marginales
+Pn<- rowSums(B)/sum(B) #Marginal fila
+Pp<- colSums(B)/sum(B) #Marginal columna
+A <- Pn %*% t(Pp) #Tabla de independencia
+round(A,1)
+Diff <- F-A
+print(xtable(round(Diff,1)), file='tdif.tex', floating=FALSE)
+
+#Otra forma para las tablas de independencia
+F1<-prop.table(B) #Tabla de frecuencias relativas
+print(xtable(round(F1,4)), file='tf.tex', floating=FALSE)
+A1<-as.matrix(tabbc2$perC[,7])%*%t(as.matrix(tabbc2$perR[20,]))/10000 #Tabla de independencia
+print(xtable(round(A1,2)), file='tind.tex', floating=FALSE)
+#Dif<-F1-A1
+#xtable(round(Dif,1))
+@
+
+Se realizó una prueba de Independencia $\chi^{2}$ entre las variables estrato y localidad para los datos reportados en "Bogotá", la cual arrojó evidencias de que dichas variables no se comportan de manera independiente, rechazando $H_{0}$ con un p valor de 2.2 exp -16 y un nivel de confianza del 95\%.
+De igual forma se realizó la comparación entre los estadísticos teóricos (media y varianza) y el estadístico calculado $\chi^{2}$ los cuales dieron por resultado 152.1 y 50500.99, respectivamente, con lo cual se concluye que se rechaza $H_{0}$.
+
+Estas variables pueden estar asociadas, pues existen factores como preferencia y capacidad adquisitiva que determinan la demanda de vivienda en las diferentes localidades que se caracterizan por su estrato predominante, así una población con nivel adquisitivo alto demanda vivienda estrato 6 y prefiere que sea en una localidad cuyo estrato dominante es el 6.
+
+\begin{table}[h]
+  \centering
+  \subfloat[Tabla de frecuencias \textbf{F}]{\label{tab:tab1a}\scalebox{.5}{\input{./tf}}}\quad
+  \subfloat[Tabla de Independencia \textbf{A}]{\label{tab:tab1b}\scalebox{.5}{\input{./tind}}}\quad
+  \subfloat[Diferencia \textbf{F-A}]{\label{tab:tab1c}\scalebox{.5}{\input{./tind}}}\quad
+\caption{Tabla de frecuencias relativas de las manzanas de Bogotá (izquierda), de indenpedencia (centro) y diferencia (derecha)}
+\label{tab:tab1}
+\end{table}
+
+  
+\section{?`Cuántos ejes retiene para el análisis? ?`Por qué?}
+
+\begin{figure}[H]
+  \centering
+<<echo=FALSE, fig=TRUE, results=hide, height=3.1>>==
+Bog<-Bogota[,-1]
+acs<-dudi.coa(Bog, scannf = FALSE, nf=3)
+iner<-inertia.dudi(acs,T)
+barplot (acs$eig,las =1, horiz=TRUE)
+round(iner$TOT,2)
+round(iner$row.abs,2)
+sum(acs$eig)/5
+@
+  \caption{Histograma para los vectores propios}\label{hist}
+\end{figure}
+
+Para el análisis tomaremos los dos primeros ejes, teniendo en cuenta que la inercia recogida por dichos ejes es superior al promedio (0.28), lo cuál se puede ver en el respectivo histograma (Figura 3). Los ejes escogidos acumulan el 67\% de la inercia total.
+
+<<results=hide, echo=false>>==
+library(xtable)
+Inercia<-data.frame(round(acs$li,2), round(iner$row.abs,2),round(iner$row.rel,2))
+colnames(Inercia)<-c("Eje 1","Eje 2","Eje 3","Eje 1(%)","Eje 2(%)","Eje 3(%)","Eje 1","Eje 2","Eje 3")
+Inercia
+xtable(Inercia)
+@
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|r|rrr|rrr|rrr|}
+  \hline
+  & \multicolumn{3}{c|}{Coordenadas} & \multicolumn{3}{|c|}{Contribuciones Absolutas} & \multicolumn{3}{|c|}{Contribuciones Relativas}\\
+  \hline
+ & Eje 1 & Eje 2 & Eje 3 & Eje 1(\%) & Eje 2(\%) & Eje 3(\%) & Eje 1 & Eje 2 & Eje 3 \\ 
+  \hline
+Usaquen & -0.57 & -1.16 & 0.30 & 3.10 & 19.54 & 1.99 & -14.73 & -61.11 & 4.19 \\ 
+  Chapinero & -0.54 & -1.99 & 0.46 & 1.29 & 26.48 & 2.10 & -5.01 & -67.81 & 3.62 \\ 
+  Santafe & 0.06 & 0.26 & 0.44 & 0.01 & 0.32 & 1.39 & 0.99 & 19.23 & 56.86 \\ 
+  SanCristobal & 0.29 & 0.29 & 0.65 & 1.03 & 1.59 & 11.41 & 12.72 & 12.90 & 62.30 \\ 
+  Usme & 1.26 & -0.19 & -0.29 & 20.27 & 0.68 & 2.46 & 92.93 & -2.06 & -5.00 \\ 
+  Tunjuelito & -0.01 & 0.42 & 0.49 & 0.00 & 1.01 & 2.07 & -0.03 & 38.76 & 53.86 \\ 
+  Bosa & 0.40 & 0.25 & 0.78 & 2.11 & 1.25 & 17.83 & 16.87 & 6.60 & 63.27 \\ 
+  Kennedy & -0.21 & 0.47 & 0.18 & 0.90 & 6.58 & 1.40 & -15.14 & 72.65 & 10.43 \\ 
+  Fontibon & -0.67 & 0.10 & -0.35 & 2.73 & 0.08 & 1.63 & -68.66 & 1.40 & -18.22 \\ 
+  Engativa & -0.53 & 0.49 & -0.30 & 4.70 & 5.92 & 3.38 & -44.86 & 37.25 & -14.34 \\ 
+  Suba & -0.31 & -0.25 & 0.46 & 1.90 & 1.87 & 9.16 & -17.88 & -11.63 & 38.38 \\ 
+  BarrUnidos & -1.04 & -0.40 & -0.79 & 5.73 & 1.29 & 7.49 & -48.86 & -7.24 & -28.42 \\ 
+  Teusaquillo & -1.26 & -1.70 & -0.82 & 6.33 & 17.70 & 6.07 & -18.96 & -34.95 & -8.08 \\ 
+  LosMartires & -0.80 & 0.68 & -0.65 & 1.94 & 2.12 & 2.87 & -37.60 & 27.04 & -24.68 \\ 
+  AntonioNari & -0.80 & 0.70 & -0.65 & 1.50 & 1.75 & 2.23 & -36.50 & 28.01 & -24.04 \\ 
+  PteAranda & -0.85 & 0.72 & -0.73 & 6.49 & 7.02 & 10.83 & -35.88 & 25.57 & -26.61 \\ 
+  LaCandelaria & -0.12 & 0.46 & 0.43 & 0.01 & 0.18 & 0.23 & -3.17 & 49.19 & 42.76 \\ 
+  RafaelUribe & 0.02 & 0.38 & 0.12 & 0.00 & 2.36 & 0.32 & 0.20 & 89.36 & 8.28 \\ 
+  CiuBolivar & 1.41 & -0.27 & -0.58 & 39.96 & 2.26 & 15.14 & 82.63 & -3.08 & -13.92 \\ 
+   \hline
+\end{tabular}
+\caption{Coordenadas y ayudas para la interpretación}\label{coor}
+\end{table}
+
+\section{Identifique en el primer eje las localidades más contributivas y sus oposiciones (localidades
+con coordenadas negativo sobre el eje vs. las de signo positivo).}
+
+\begin{figure}[h]
+  \centering
+<<echo=FALSE, fig=TRUE, height=7.1, width=8.1>>==
+plot.dudi(acs, ex=1, ey=2)
+#Noestrato<- Bog[,1]
+#indicativa<-cor(Noestrato,Bog)
+#text(indicativa, "Sin estrato",col = "darkgreen", pos =1, cex =1, pch=10)
+@
+  \caption{Primer plano factorial para la distribución de las manzanas de Bogotá por localidades}\label{plan1}
+\end{figure}
+
+\begin{figure}[h]
+<<echo=FALSE, fig=TRUE, width=9, height=4>>==
+s.corcircle(acs$tab)
+@
+\caption{Círculo de correlaciones para el ACS de las manzanas de Bogotá}
+\end{figure}
+
+Las localidades que más contribuyen al eje 1 son Ciudad Bolivar y Usme en el eje positivo, a las cuáles se oponen Barrios unidos, Teusaquillo y Puente Aranda (Figura \ref{plan1}).
+
+
+\section{Identifique los estratos más contributivos al primer eje y sus oposiciones}
+Los estratos 1, 2 y 3 son los que más contribuyen al primer eje, siendo evidentemente opuestos los estratos 1 y 3, el estrato dos se encuentra representado muy cerca del origen.
+
+\begin{figure}[h]
+  \centering
+<<echo=FALSE, fig=TRUE, height=7.1, width=8.1>>==
+plot.dudi(acs,Trow=FALSE, ex=1, ey=2)
+@
+  \caption{Primer plano factorial para la distribución de las manzanas de Bogotá por estratos}\label{plestr}
+\end{figure}
+
+\section{Repita 6 para el segundo eje}
+
+En la figura \ref{plan1}, los estratos que más contribuyen al eje 2 se agrupan en la parte positiva de la recta: Santafé, San Cristóbal, Rafael Uribe, Candelaria, Kennedy, Puente aranda, Antonio Nariño, Los Mártires y Tunjuelito.
+
+\section{Repita 7 para el segundo eje}
+
+Los estratos 1, 2 y 3 se encuentran opuestos a los estratos 4, 5 y 6 según el segundo eje, el que más contribuye es el estrato 2. 
+
+\section{Resuma la comparación de los perfiles de las localidades utilizando el primer plano
+factorial.}
+
+<<echo=FALSE, fig=FALSE, results=hide>>==
+plot.dudi(acs, ex=1, ey=2)
+round(acs$li,2)
+@
+\begin{centering}
+<<echo=FALSE, results=tex>>==
+#Tabla de distancia euclidiana
+DistEuc<-sqrt(acs$li[,1]^2 + acs$li[,2]^2)
+dis<-data.frame(DistEuc, row.names=(rownames(Bog)))
+xtable(round(dis,2),"Distancia Euclidiana para los perfiles por localidades",label="distan")
+@
+\end{centering}
+
+
+Los perfiles de las localidades en el primer plano factorial se aglutinan en tres grupos principalmente, la localidad que más se diferencia del promedio es Teusaquillo según cálculos de distancia euclidiana (cuadro \ref{distan}), las localidades más relacionadas con el primer eje según porcentaje de contribución son Usme y Ciudad Bolívar cuyas cuadras se caracterizan por ser opuestas a las localidades de Fontibón, Barrios Unidos, Puente Aranda y Antonio Nariño. La localidad que más se acerca al promedio según cálculos de distancia euclidiana es Santafé. Las localidades que más se relacionan con el segundo eje son Chapinero, Teusaquillo y Usaquén. Las demás localidades tienen manzanas diversas que seguramente contienen diferentes estratos en combinaciones variadas en proporción.
+
+\section{Resuma la comparación de los perfiles de los estratos utilizando el primer plano
+factorial.}
+
+\begin{figure}[h]
+  \centering
+<<echo=FALSE, fig=TRUE, results=hide, height=7, width=9>>==
+plot.dudi(acs, Tcol=FALSE, ex=1, ey=2)
+round(acs$co,2)
+@
+  \caption{Primer plano factorial para la distribución de las manzanas de Bogotá según localidades}\label{planloca}
+\end{figure}
+
+Se observa que los perfiles de los estratos se distribuyen ordenadamente desde el estrato 1 al 3 sobre el primer eje en el primer plano factorial, siendo opuestos principalmente estrato 1 y el 4. En el segundo eje se oponen los estratos 3 y 6 y en general el estrato más cercano al promedio es el 2 y el más lejano es el 6 (figura \ref{planloca}). 
+
+
+\section{Según el primer plano factorial, ?`cómo es la asociación entre localidades y estratos?}
+
+Según el primer plano factorial (figura \ref{plan1}) existen localidades con estratos dominantes que las caracterizan y existen localidades con estratos mixtos. Se pueden observar principalmente tres grupos de localidades definidos por su estrato: estrato 1; estratos 2 y 3; estratos 4, 5 y 6; y unas localidades dispersas entre el estrato 3 y el 4.
+
+Los estratos más altos agrupan a las localidades de Usaquén, Teusaquillo y Chapinero, los cuales se localizan geográficamente hacia el norte de la ciudad. El estrato 1 se localiza hacia el extremo sur--oriente en las localidades de Usme y Ciudad Bolívar, localidades menos homogéneas en estrato como Barrios Unidos, Fontibón y Suba y la masa de localidades de estrato 2 y 3 se localizan tan aglomeradas que podría decirse que comparten las características de distribución de manzanas en estratos.
+
+\section{?`Hay efecto Guttman? Explique.}
+
+De acuerdo al primer plano factorial, se puede observar que se presenta un efecto Guttman.  El primer eje opone los estratos extremos, es decir los estratos altos (4, 5 y 6) contra estratos bajos (1 y 2); el eje 2 opone los estratos medios (2 y 3). Así mismo, se observa que los estratos se ordenan siguiendo la parábola y de forma secuencial, de derecha a izquierda aparecen los estratos de menor a mayor. De forma análoga, el orden de los estratos se traslada a las localidades siguiendo una parábola invertida: Usme y Ciudad Bolívar son las localidades que se encuentran en los estratos más bajos, mientras que Usaquén, Teusaquillo y Chapinero están en los estratos más altos.
+
+
+\section{?`Hay contraposiciones en el tercer eje que no se observen en el primer plano factorial?
+Según lo anterior, ?`vale la pena interpretar el tercer eje?}
+
+\begin{figure}[H]
+  \centering
+<<fig=TRUE, echo=FALSE, results=hide, height=10.1, width=8.1>>==
+par(mfrow=c(2,1), mai=c(1,0,2,0))
+plot.dudi(acs, ex=1, ey=3, infaxes="in")
+plot.dudi(acs, ex=2, ey=3, infaxes="in")
+@
+  \caption{Planos factoriales para los ejes 1 y 3 (arriba), y ejes 2 y 3 (abajo) para la distribución de las manzanas de Bogotá}\label{planax3}
+\end{figure}
+
+De acuerdo a la figura \ref{planax3}, en el eje 3 se puede observar que el estrato 4 se contrapone a los estratos 5 y 6, lo cual no era evidente en el primer plano factorial. Sin embargo, este eje no recoge suficiente inercia como para contemplarlo en el análisis.
+Así mismo, de acuerdo a las tablas de inercia, la localidad Rafael Uribe no estaría bien representada en el eje tres.
+
+\section{Agregue a los datos una columna de orden de las localidades según el primer plano
+factorial. Ordene la TC por esa variable y haga una gráfica que muestre los perfiles
+de las localidades así ordenadas y el perfil promedio. No incluya la columna sin
+estrato. Resuma la comparación de los perfiles utilizando esta gráfica y el primer
+plano factorial.}
+
+Observando los perfiles ordenados de acuerdo al primer eje en la Figura \ref{perford}, aquellos que cuentan con proporciones muy similares de estratificación, en el primer plano factorial se encuentran muy cercanos espacialmente. En particular, las localidades Antonio Nariño, Mártires y Puente Aranda tienen una gran proporción del estrato 3, lo cual es similar a lo observado en el primer plano factorial. Así mismo, en las localidades de Usme y Ciudad Bolívar predomina el estrato 1, lo cual es visible en el primer plano factorial, pues éstas se encuentran en el lado positivo del eje 1 y están contiguas.
+
+\begin{figure}[H]
+  \centering
+<<fig=TRUE, echo=FALSE, height=9, width=8>>==
+ordep <-order(acs$li[ ,1])
+azul <-c(" white "," cyan "," blue "," darkblue ")
+marron <-c(" burlywood "," coral "," chocolate "," brown ")
+verde <-c(" green "," darkolivegreen3 "," darkcyan "," darkgreen ")
+mycolors <-c(azul ,verde , marron )
+par(mai=c(0 ,1 ,0 ,0))
+plotct (Bog[ordep ,],"row",col=mycolors)
+@
+  \caption{Perfiles de las manzanas de Bogotá ordenadas sobre el primer eje del ACS}\label{perford}
+\end{figure}
+
+\section{Utilizando el primer plano factorial proponga una partición de las localidades en
+cinco clases.}
+
+De acuerdo a la distribución de las localidades en el primer plano factorial, la partición de las mismas sería así:
+
+\textit{Grupo 1:} Usme, Ciudad Bolivar;
+\textit{Grupo 2:} Kennedy, La Candelaria, Tunjuelito, Rafael Uribe, San Cristóbal, Santafe, Bosa;
+\textit{Grupo 3:} Puente Aranda, Antonio Nariño, Los Mártires, Engativá;
+\textit{Grupo 4:} Fontibon, Suba, Barrios Unidos;
+\textit{Grupo 5:} Usaquén, Teusaquillo, Chapinero.
+
+\section{Proponga una partición en cinco clases utilizando la gráfica de perfiles entre localidades.}
+
+De acuerdo a la figura \ref{perford}, los grupos propuestos para las localidades serían los siguientes:
+\textit{Grupo 1:} Usme, Ciudad Bolivar;
+\textit{Grupo 2:} Bosa, San Cristóbal, Santafe, Rafael Uribe, Tunjuelito, La Candelaria, Kennedy;
+\textit{Grupo 3:} Puente Aranda, Antonio Nariño, Los Mártires, Fontibon,Engativá;
+\textit{Grupo 4:} Barrios Unidos, Teusaquillo;
+\textit{Grupo 5:} Usaquén, Chapinero, Suba.
+
+\section{Proponga un partición ``final" de las localidades en cinco clases y haga una gráfica
+de perfiles incluyendo el perfil marginal. Como otra síntesis del análisis comente la
+gráfica obtenida.}
+
+De acuerdo a la figura \ref{pergroup}, las particiones 1, 2 y 3 coinciden con la ubicación de los tres primeros estratos. La partición 5 está asociada a los estratos más altos (4,5,6), mientras que la partición 4 contiene perfiles un poco disímiles pero cercanos espacialmente entre sí.
+
+\begin{figure}[H]
+  \centering
+<<grupo, fig=TRUE, echo=FALSE, width=8, height=8>>==
+plot(acs, cframe =1, xlim =c ( -1.2 ,0.8) ) # primer plano
+# proyección de NoStra como ilustrativa
+#NoStr <- ?suprow (acs, Bogota [1,])$lisup
+#points(NoStr,col ="brown"); text (NoStr,"NOSTR",col =" brown ",pos =1, cex=0.8)
+clases <- factor(c("P5","P5","P2","P2","P1","P2","P2","P2","P4","P3","P4","P4","P5","P3","P3","P3","P2","P2","P1"))
+#rblf <- factor (rep (c("P5","P4","P3","P2"),rbl ))
+s.class (acs$li ,clases ,acs$lw ,col=c(" brown "," orange "," darkgreen ","darkblue ", "darkred"),
+          cstar=0, cellipse =0, add.plot = TRUE )
+@
+  \caption{Primer plano factorial del ACS mostrando los centros de gravedad de grupos de localidades (P2 a P5)}\label{pergroup}
+\end{figure}
+
+
+\section{Construya una TC más pequeña formando algunos grupos de localidades de perfiles
+muy parecidos: Usme-CiudadBolívar, etc. (las dos filas se colapsan en una sumándolas
+en la TC). Realice un ACS de esta tabla, compare los resultados de la tabla
+completa. Comente la propiedad de equivalencia distribucional.}
+
+Al realizar el ACS con la nueva tabla de contingencia del cuadro \ref{tcgroup}, la cual agrupa perfiles similares, los resultados del ACS original son similares al ACS de las particiones. Observando la figura \ref{acsnu}, al agrupar las localidades no cambia significativamente la ubicación de los perfiles en el primer plano factorial. Por tanto, se concluye que en este caso aplica la propiedad de equivalencia distribucional.
+
+Por otro lado, al comparar la inercia acumulada en el ACS original con el ACS de los perfiles agrupados, se encontró que el promedio de la inercia bajó, de 0.28 a 0.26, lo cual implica que hay una pequeña pérdida de variación.
+
+<<results=hide, echo=FALSE>>==
+clasesnu <- factor(c("P10","P9","P2","P2","P1","P2","P2","P2","P7","P4","P5","P6","P8","P3","P3","P3","P2","P2","P1"))
+nuK<-read.csv('ct.csv',header=TRUE, row.names=1)
+@
+
+\begin{centering}
+<<results=tex, echo=FALSE>>==
+library(xtable)
+xtable(nuK, "Tabla de contingencia según grupos de localidades", label="tcgroup")
+@
+\end{centering}
+
+<<results=hide, echo=FALSE, fig=FALSE>>==
+library(FactoClass)
+nueK<-nuK[,-1]
+acs2<-dudi.coa(nueK, scannf = FALSE, nf=3)
+iner2<-inertia.dudi(acs2,T)
+barplot (acs2$eig,las =1, horiz=TRUE)
+iner$TOT
+iner2$TOT
+mean(acs2$eig)
+mean(acs$eig)
+sd(acs$eig)
+sd(acs2$eig)
+@
+
+\begin{figure}[H]
+  \centering
+<<fig=TRUE, echo=FALSE, height=6.5, width=12.1>>==
+par(mfrow=c(1,2), mai=c(0,2,1,1))
+plot.dudi(acs, infaxes="in")
+plot.dudi(acs2, infaxes="in")
+@
+  \caption{Planos factoriales del ACS original (izquierda) y el ACS de las particiones (derecha)}\label{acsnu}
+\end{figure}
+
+\section{Compruebe ``a mano" (utilizando R) las relaciones de transición. Por ejemplo: calcule
+la coordenada, sobre el eje 1, de Usme a partir de las coordenadas de los 6 estratos.
+Analice el ejercicio (?`quién atrae a quién y porqué?).}
+
+<<echo=TRUE>>==
+#Relaciones cuasibaricéntricas
+Usmeperf<-tabbc$perR[5,]/100#coordenadas perfil Usme
+eig1<-acs$eig[1] #valor propio 1
+estraxis1<-acs$co[,1] #Coordenada primer eje Usme
+
+1/sqrt(eig1)*sum(c(Usmeperf)*estraxis1)
+atrac<-Usmeperf*estraxis1
+acs$li[5,]#coordenada Usme primer eje
+@
+
+La coordenada del perfil Usme sobre el primer eje es 1.25. Usando las relaciones cuasibaricéntricas, logramos obtener este mismo valor con las coordenadas de los estratos sobre el primer eje. La mayor atracción se presenta con el estrato 1 hacia la localidad de Usme (0.86), puesto que el ponderador (0.60, el perfil de Usme para el estrato 1)  es el más alto, y el estrato 1 es el más alejado del origen, hacia el lado positivo del eje 1. Así mismo, gráficamente la relación entre el estrato 1 y Usme es evidente por su cercanía (figura \ref{plan1}). Por otro lado, la dilatación para el perfil de Usme es 1.32, la cual aleja el promedio ponderado (0.95) del centro.
+
+\section{Describa la distribución geográfica de los habitantes de Bogotá según su nivel socioeconómico, utilizando el estrato de la manzana donde vive cada uno como indicador
+de ese nivel.}
+
+Una población con capacidad adquisitiva media alta aún puede elegir la zona de vivienda en una localidad específica con dominio de estratos 4 y 5 (e.g. Usaquén y Teusaquillo) contrario a la población de capacidad media baja (estratos 2 y 3) que se encuentra ocupando localidades diversas de estrato.
+Existe otro conjunto de localidades que están representadas por manzanas de estrato 1 y corresponden a aquellos lugares de fácil acceso para poblaciones con capacidad adquisitiva mínima, es decir cada localidad puede estar caracterizada por la dominancia de un estrato particular.
+Por otro lado, localidades de niveles socioeonómicos extremos tienen exclusividad de estrato, por ejemplo Chapinero está asociada al estrato 6, mientras que Usme y Ciudad Bolívar están asociadas al estrato 1.
+Se puede observar que hay una tendencia en la agrupación de localidades a coincidir con una distribución espacial de los estratos en la ciudad, perteneciendo al estrato 1 las localidades ubicadas al sur oriente y centro, al estrato 2 y 3 las localidades ubicadas al sur occidente y 4, 5 y 6 al norte de la ciudad.
+
+\end{document}

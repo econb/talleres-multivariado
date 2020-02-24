@@ -1,0 +1,484 @@
+\documentclass{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{array}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+
+\title {Análisis Multivariado\\Taller No. 8: Adjetivos y colores, ACS y clasificación}
+\author {Laura Elizabeth Holguín\\Eduardo Contreras Bohórquez\\Diana Catalina Martínez}
+\date{}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+<<results=hide, echo=false>>==
+#Importación de la tabla
+colores<-read.table("colores.txt", header=TRUE, row.names=1)
+attach(colores)
+length(colores)
+colSums(colores)
+rowSums(colores)
+sum(colores)
+class(colores)
+
+#librería Factoclass
+library(FactoClass)
+@
+
+%1. 
+\section{?`Es posible determinar el número de personas encuestadas a partir de la tabla de frecuencias
+adjetivos $\times$ colores? En caso afirmativo, ?`cuántas son?}
+
+Dado que sólo se conservan los adjetivos mencionados al menos tres veces,  no se podría determinar con exactitud cuántas personas se encuestaron. Sin embargo, según la tabla \ref{perf} la cual muestra el total de respuestas por color, se asume que al menos 110 personas participaron en esta encuesta ya que es el valor máximo de votos por un color. 
+
+<<results=hide, echo=false>>==
+sumcol<-data.frame(colSums(colores))
+colnames(sumcol)<-c("SumaColores")
+@
+
+<<results=tex, echo=false>>==
+print(xtable(round(sumcol,0), caption="Suma por columna para la tabla adjetivos $\times$ colores", label="perf"),table.placement="H")
+@
+
+%2. 
+\section{?`Qué significa el total 1081 de la tabla de contingencia?}
+
+1081 corresponde a la sumatoria de frecuencias de adjetivos que se mencionaron al menos tres veces.
+
+%3. 
+\section{?`Cuántos ejes retiene para el análisis? ?`Por qué?.}
+
+<<results=hide, echo=false>>==
+acscol<-dudi.coa(colores, scannf=FALSE, nf=6)
+inercol<-inertia.dudi(acscol,,T)
+inercol$TOT
+sum(acscol$eig)
+mean(acscol$eig)
+@
+
+Se retienen los seis primeros ejes dado que cada uno de los cinco primeros retiene una inercia por encima del promedio $\Sexpr{round(mean(acscol$eig), 2)}$, pero con el sexto llegan a acumular en conjunto el 73.97\% de la inercia. Ver cuadro \ref{valp}. 
+
+<<results=tex, echo=false>>==
+print(xtable(round(inercol$TOT, 2), label="valp", caption="Inercia retenida por los ejes para los adjetivos por colores"),table.placement="H")
+@
+
+%4. 
+\section{Teniendo en cuenta los ejes retenidos para el ACS, identifique en qué planos están mejor representados cada uno de los 11 colores.}
+
+En el cuadro \ref{col_planos} están los planos en los cuáles los colores están mejor representados. Los colores naranja, amarillo y rojo, en su orden, son los que se encuentran mejor representados en algún plano factorial en particular. En particular, el plano en el que mejor se encuentran el naranja y el rojo es el conformado por los ejes 1 y 6, mientras que el amarillo se encuentra mejor representado en el plano de los ejes 4 y 5. En contraste, los colores con menor representatividad en algún plano factorial son castaño, gris y violeta. Este cuadro se obtuvo analizando las contribuciones relativas de cada color por eje (ver cuadro \ref{conrel})
+
+
+<<results=hide, echo=false>>==
+col<-c("Azul",	"Rojo",	"Amarillo",	"Blanco",	"Gris",	"Rosado",	"Castaño",	"Violeta",	"Negro",	"Naranja",	"Verde")
+mejplan<-c("Plano ejes 2:3",	"Plano ejes 1:6",	"Plano ejes 4:5",	"Plano ejes 1:3",	"Plano ejes 1:2",	"Plano ejes 3:4",	"Plano ejes 3:4",	"Plano ejes 2:6",	"Plano ejes 1:2",	"Plano ejes 1:6",	"Plano ejes 2:4")
+contab<-c("45.43",	"84.37",	"90.07",	"70.29",	"34.82",	"69.39",	"28.01",	"36.29",	"52.17",	"90.58",	"52.4")
+P4<-cbind(col, mejplan, contab)
+colnames(P4)<-c("Color",	"Mejor plano",	"Contribución absoluta")
+@
+<<results=tex, echo=false>>==
+print(xtable(P4, caption="Mejores planos por color", label="col_planos"),table.placement="H")
+@
+
+<<results=tex, echo=false>>==
+print(xtable(round(inercol$col.rel,2), caption="Contribuciones relativas a la inercia de colores por eje", label="conrel"), table.placement="H")
+@
+
+%5. 
+\section{Para cada color o grupo de colores identifique los adjetivos más asociados leyendo en el plano donde estén mejor representados.}
+
+<<results=hide, echo=false>>==
+col<-c("Azul",	"Rojo",	"Amarillo",	"Blanco",	"Gris",	"Rosado",	"Castaño",	"Violeta",	"Negro",	"Naranja",	"Verde")
+mejplan<-c("Plano ejes 2:3",	"Plano ejes 1:6",	"Plano ejes 4:5",	"Plano ejes 1:3",	"Plano ejes 1:2",	"Plano ejes 3:4",	"Plano ejes 3:4",	"Plano ejes 2:6",	"Plano ejes 1:2",	"Plano ejes 1:6",	"Plano ejes 2:4")
+adjs<-c("Equilibrado, reposado, celeste, calma, frío, extendido, limpio, límpido, lejano, patriótico",	"Enfermizo, violento, pasional, crudo, enervante, angustiante, agresivo,  vital, ardiente, sanguíneo, revolucionario y quemante",	"Sonriente, ácido, floreciente, luminoso, sonoro, asiático, soleado",	"Limpio, límpido, inmaculado, nevado, puro",	"Brumoso, sombrío, mortal, discreto, refinado, invernal, liso, inestable, sucio, vacío",	"Pálido, florido, azucarado, romántico, frágil, tonto, perfumado, insignificante, infantil, liviano",	"Feo, invernal, armonioso, claro, sombrío, perdido, duro, helado, masculino, otoñal",	"Religioso, eclesiástico, discreto",	"Silencioso, siniestro, sobrio, profundo, severo, triste, misterioso, avejentado, religioso",	"Dinámico, redondeado, frutado, cómico, brillante, femenino, jugoso y mecánico",	"Vividor, franco, reposado, primaveral, natural, campestre")
+
+P5<-cbind(col, mejplan, adjs)
+colnames(P5)<-c("Color",	"Mejor plano",	"Adjetivos asociados")
+@
+<<results=tex, echo=false>>==
+print(xtable(P5, caption="Colores y adjetivos asociados", label="col_adjs",align="c|c|c|p{4in}"), table.placement="H")
+@
+
+%6. 
+\section{Para cada color o grupos de colores presente gráficamente su perfil, mostrando los adjetivos más asociados y reuniendo los de baja frecuencia en una categoría de otros.}
+
+<<results=hide, echo=false, fig=false>>==
+#Perfiles de los colores
+topocols<-topo.colors(11)
+tab<-plotct(colores, "col", col=topocols, tables = TRUE)
+mycolors<-c("darkblue", "red3","yellow","white","grey","pink","chocolate","violetred3","black","darkorange","green4")
+colors()
+colo<-colnames(colores)
+@
+
+\begin{figure}[H]
+\centering
+<<fig=true, echo=false>>==
+i<-1
+par(mfrow=c(4,3), las=3, mai=c(1,0.2,0,0))
+for (coli in colo){
+  pcolu<-tab$perC[c(rownames(colores[which(colores[,coli]>2),])),coli]
+  barplot(sort(pcolu, decreasing=TRUE), col=mycolors[i])
+  i<-i+1
+}
+@
+\caption{Perfiles columna para los adjetivos $\times$ colores.}\label{perf1}
+\end{figure}
+
+<<fig=false, echo=false, results=hide>>==
+topocols<-topo.colors(11)
+tab<-plotct(colores, "col", col=topocols, tables = TRUE)
+@
+
+<<fig=false, echo=false, results=hide>>==
+i<-1
+for (coli in colo){
+  potros<-tab$perC[c(rownames(colores[which(colores[,coli]<2),])),coli]
+  barplot(sort(potros, decreasing=TRUE), col=mycolors[i])
+  i<-i+1
+  cbind(coli, potros)
+}
+@
+
+
+%7.
+\section{Para un adjetivo cualquiera compruebe numéricamente la fórmula de transición (cuasi-baricentro de las coordenadas de los 11 colores ponderadas por el perfil del respectivo adjetivo).}
+
+La coordenada del perfil del adjetivo \textit{ardiente} sobre el eje 1 es $\Sexpr{round(acscol$li["ardiente",1],2)}$, la cual calcularemos a continuación:
+
+El perfil del adjetivo \textit{ardiente} es:\\
+<<echo=false, results=hide>>==
+Pardiente<-colores["ardiente",]/sum(colores["ardiente",])
+xtable(t(data.frame(Pardiente*100)))
+tab$perR["ardiente",]/100
+sum(tab$perR["ardiente",])
+@
+
+<<echo=false, results=tex>>==
+print(xtable(t(data.frame(Pardiente*100))),table.placement="H")
+@
+
+<<results=hide, echo=false>>==
+co1ax<-data.frame(acscol$co[,1])
+rownames(co1ax)<-c(colnames(colores))
+colnames(co1ax)<-"Coor. Eje 1"
+co1ax
+@
+
+Coordenadas de los colores sobre el primer eje:\\
+<<results=tex, echo=false>>==
+print(xtable(t(co1ax)),table.placement="H")
+@
+
+El valor propio correspondiente al primer eje es $\Sexpr{round(acscol$eig[1],2)}$
+
+Por tanto, la fórmula para las relaciones de transición sería:
+
+\begin{align*}
+& \frac{1}{\sqrt{0.76}}\cdot(0.66*(-1.68)+0.11*(-0.60)+0.22*(-1.54))\\
+&=1.15*(-1.11-0.07-0.34)\\
+&=1.15*(-1.53)=\textbf{-1.75}\\
+\end{align*}
+
+El promedio ponderado por el perfil del color ardiente es -1.53. Dado que el primer eje retiene la mayor inercia, el coeficiente de dilatación (1.15) es relativamente pequeño, haciendo que la coordenada sobre el eje se desplace a la izquierda en una pequeña proporción. De esta forma, la coordenada del adjetivo \textit{ardiente} sobre el eje 1 es de -1.75.
+
+<<echo=false, results=hide>>==
+vprop1<-acscol$eig[1]
+(1/sqrt(vprop1))*sum((Pardiente)*acscol$co[,1])
+acscol$li["ardiente",1]
+@
+
+
+%8. 
+\section{Escriba los adjetivos que se asocian más a cada color, como conclusión del ACS.}
+
+Se logró establecer que las personas si tienden a asociar adjetivos particulares con los colores, tras realizar el ACS de colores x adjetivos se encontraron relaciones específicas entre:
+El color azul y el adjetivo celeste, los colores rojo y naranja con el adjetivo sanguíneo, el color amarillo al adjetivo luminoso, el color blanco se asocia de manera casi exclusiva con la pureza, gris y negro suelen asociarse a triste, el rosa es un color azucarado, infantil e insignificante. Los colores verde y castaño se relacionan con lo natural, violeta se relaciona más frecuentemente con religioso o eclesiástico y naranja con frutado.
+
+
+
+%9. 
+\section{En la clasificación jerárquica, ?`Qué adjetivos se unen primero?}
+
+<<results=hide, echo=false>>==
+fccol<-FactoClass(colores, dudi.coa, scanFC=FALSE, nf=10, nfcl=10, k.clust=10)
+fccol$indices
+Pri<-as.vector(rownames(colores[c(fccol$indices$Prim[1:9]),]))
+Sec<-as.vector(rownames(colores[c(fccol$indices$Benj[1:9]),]))
+@
+
+Los adjetivos que primero se unen en la clasificación son los siguientes:
+
+\begin{itemize}  
+\item Asiático con soleado. 
+\item Brillante con femenino, jugosos y mecánico. 
+\item Helado con masculino y otoñal.
+\item Inmaculado con nevado.
+\item Lejano y patriótico.
+\item Quemante y revolucionario.
+\end{itemize}
+
+%10. 
+\section{Relate las últimas 5 uniones en el proceso de clasificación, indicando los grupos que se unen en cada caso y el aumento de la inercia intra-clases.}
+
+<<results=hide, echo=false>>==
+Nodo<-fccol$indices[c(88,87,86,85,84),]
+dim(fccol$indices)
+fccol5<-FactoClass(colores, dudi.coa, scanFC=FALSE, nf=10, nfcl=10, k.clust=6)
+fccol$indices
+data.frame(fccol5$cluster)
+@
+
+De acuerdo a la figura \ref{arb5}, las últimas 5 uniones en el proceso de clasificación son:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|r|}
+  \hline
+ \textbf{Nodo} &\textbf{Subgrupo 1} &\textbf{Subgrupo 2} &\textbf{Aumento Inercia Intra}\\ 
+  \hline
+177 & 174 & 176 & 0.6368 \\ 
+  \hline
+176 & 173 & 175 & 0.4912 \\ 
+  \hline
+175 & 157 & 171 & 0.4671 \\ 
+  \hline
+174 & 154 & 172 & 0.4276 \\ 
+  \hline
+173 & 160 & 170 & 0.3821 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics{arbol5}
+\caption{Dendograma correspondiente a las últimas 5 uniones}\label{arb5}
+\end{figure}
+
+%11. 
+\section{?`Cuánto es la inercia entre clases para una partición en dos clases, usando el método de Ward?}
+
+Una partición en dos clases de la nube de adjetivos daría una distancia entre los dos grupos de 0.64, que corresponde al índice del nodo raíz del dendograma (nodo 177, figura \ref{arb5}).
+
+<<results=hide, echo=false>>==
+fccol2<-FactoClass(colores, dudi.coa, scanFC = FALSE, nfcl=10, k.clust=2)
+fccol2$cluster
+fccol2$clus.summ
+@
+
+
+%12. 
+\section{De acuerdo con el objetivo del ejercicio, ?`cuántas clases selecciona? ?`Por qué?}
+
+\begin{figure}[H]
+\centering
+<<fig=true, echo=false>>==
+par(mai=c(1,1,1,0))
+barplot(sort(fccol$indices$Indice, decreasing=TRUE), cex.axis = 0.6)
+abline(0.15,0, col="darkgreen")
+@
+\caption{Histograma de los índices de nivel para clasificación jerárquica de los adjetivos $\times$ colores}
+\label{hind}
+\end{figure}
+
+De acuerdo a la figura \ref{hind}, se observa que al realizar particiones por encima de diez clases la inercia intra comienza a estabilizarse. Por tanto, realizar una partición adicional no significa grandes cambios en la inercia. Esta partición se aproxima al número de colores que se tienen para el análisis (11).
+
+%13. 
+\section{Escriba el valor del coeficiente inercia-entre/inercia-total después de la consolidación.}
+
+<<results=tex, echo=false>>==
+xtable(round(fccol$clus.summ,3), caption="Cambios en la partición de adjetivos $\times$ colores debido a la consolidación", label="cons")
+@
+
+<<results=hide, echo=false>>==
+InerTot<-round(sum(fccol$dudi$eig),3)
+InerIntra<-round(fccol$clus.summ[11,4],3)
+coefIner <- round((InerTot-InerIntra)/InerTot,3)
+@
+
+Una vez realizado el proceso de consolidación, y teniendo en cuenta los resultados arrojados por la tabla \ref{cons}, el cálculo para el coeficiente sería:
+
+$$
+\frac{Inercia\, entre}{Inercia\, Total} = \frac{Inercia\, total - Inercia\, intra}{Inercia\ Total} = \frac{\Sexpr{InerTot} - \Sexpr{InerIntra}}{\Sexpr{InerTot}} = \Sexpr{coefIner}
+$$
+
+
+%14. 
+\section{?`Cambió el coeficiente inercia-entre/inercia-total en el proceso de consolidación? ?`Cuánto?}
+
+
+<<results=hide, echo=false>>=
+total<- sum(fccol$dudi$eig)
+
+intraaf <- fccol$clus.summ$Aft.Inertia[11]
+entreaf <- total - intraaf
+coefaf <- round(entreaf/total,3)
+
+intrabf <- fccol$clus.summ$Bef.Inertia[11]
+entrebf <- total - intrabf
+coefbf <- round(entrebf/total,3)
+
+cambio <- round((1 - (coefbf/coefaf))*100, 2)
+@
+
+El coeficiente inercia-entre/inercia-total antes de la consolidación es de \Sexpr{coefbf} y después de, es de \Sexpr{coefaf}. Esto significa que aumentó en un 1.24\%, indicando que el algoritmo K-means logró obtener grupos ligeramente más cohesivos que los obtenidos por el método jerárquico.
+
+%15. 
+\section{?`Qué colores son más frecuentes en cada clase de adjetivos?}
+
+<<echo=false, results=hide>>==
+sort(fccol$cluster, decreasing=TRUE)
+
+tabla <- data.frame()
+for (clase in 1:10) {
+  adjs <- names(fccol$cluster[fccol$cluster==clase])
+  cols <- colSums(colores[adjs,])
+  fcols <- names(sort(cols,decreasing=T)[1:3])
+  a <- paste(adjs, collapse=", ")
+  b <- paste(fcols, collapse=", ")
+  fila <- cbind(a,b)
+  tabla <- rbind(tabla, fila)
+}
+colnames(tabla) <- c("Adjetivos","Colores")
+@
+<<results=tex, echo=false>>==
+print(xtable(tabla, caption="Colores más frecuentes por cada clase de adjetivos", label="clase_adjs_cols",align="c|p{3in}|p{3in}"), table.placement="H")
+@
+
+
+%16. 
+\section{Construya una tabla de contingencia de Clases por Colores.}
+
+<<results=hide, echo=false>>==
+tablact <- data.frame()
+for (clase in 1:10) {
+  adjs <- names(fccol$cluster[fccol$cluster==clase])
+  cols <- as.integer(colSums(colores[adjs,]))
+  tablact <- rbind(tablact, cols)
+}
+colnames(tablact) <- colnames(colores)
+rownames(tablact) <- 1:10
+@
+<<results=tex, echo=false>>==
+print(xtable(tablact, caption="Tabla de contingencia de clases por colores", label="concol"),table.placement="H")
+@
+
+%17. 
+\section{Haga la gráfica de los perfiles fila (clases según colores). Analice la gráfica.}
+
+En la figura se puede observar que, en general, cada clase tiene una correspondencia natural con un color diferente, por ejemplo, el amarillo con la clase 1 o el blanco con la clase 9. La única clase que no presenta un color predominante es la número 3, donde se encuentran el gris y el castaño con proporciones similares.
+
+\begin{figure}[H]
+\centering
+<<results=hide, echo=false, fig=true>>==
+plotct(tablact, "row", col=mycolors)
+@
+\caption{Perfiles fila para las clases generadas de acuerdo a la clasificación, según colores}\label{pfil}
+\end{figure}
+
+%18
+\section{Escriba la los adjetivos se asocian más a cada color, según la partición obtenida.}
+
+<<results=hide, echo=false>>==
+colcolumn <- c("Amarillo","Rojo","Castaño y gris","Violeta","Rosado","Naranja","Azul","Verde","Blanco","Negro")
+
+tabla2 <- cbind(data.frame(colcolumn), tabla$Adjetivos)
+colnames(tabla2) <- c("Color representativo de parción", "Adjetivos")
+@
+<<results=tex, echo=false>>==
+print(xtable(tabla2, caption="Adjetivos más asociados al color más representativo de cada partición", label="adj_col_part",align="c|p{1in}|p{4in}"),table.placement="H")
+@
+
+%19
+\section{Produzca y analice los planos factoriales colocando nueva variable categórica clase como ilustrativa.}
+
+<<results=hide, echo=false>>==
+fccol<-FactoClass(colores, dudi.coa, scanFC=FALSE, nf=10, nfcl=10, k.clust=10)
+colcolumn <- c("Amarillo","Rojo","Castaño y gris","Violeta","Rosado","Naranja","Azul","Verde","Blanco","Negro")
+#plotFactoClass(fccol,cex.clu=0.4,cex.col=1,Trow=F,nclus=colcolumn)
+@
+
+En los gráficos a continuación se observa el mejor plano donde está representado cada color, adicionalmente, en cada plano se proyectan los centroides de cada grupo de adjetivos. Cada grupo se etiqueta con su color más frecuente (en Negro y fuente más grande).
+En general, se observa que cada proyección de un color tiene una correspondencia con un grupo de adjetivos, dada su cercanía en el plano, y que el color más repesentativo en dicho grupo es igual al color proyectado más cercano, por ejemplo, en el plano de ejes 2 y 3, el color mejor representado es el Azul, y su grupo más cercano tiene como color más representativo el Azul. Ésto nos indica que el color que se asoció a cada grupo de adjetivos fue una decisión acertada, y que el agrupamiento automático de adjetivos logró resultados coherentes.
+
+\begin{figure}[H]
+\centering
+<<fig=true, echo=false>>==
+par(mfrow=c(2,2))
+
+plot.dudi(acscol, ex=2, ey=3, infaxes="in", ucal=0.2, xlim=c(-1.4,1.4), main="mejor: Azul",Trow=F)
+points(fccol$cor.clus[,c(2,3)], pch=16)
+text(fccol$cor.clus[,c(2,3)], label=colcolumn)
+
+plot.dudi(acscol, ex=1, ey=6, infaxes="in", ucal=0.2, xlim=c(-1.4,1.4), main="mejor: Rojo y Naranja",Trow=F)
+points(fccol$cor.clus[,c(1,6)], pch=16)
+text(fccol$cor.clus[,c(1,6)], label=colcolumn)
+
+plot.dudi(acscol, ex=4, ey=5, infaxes="in", ucal=0.3, xlim=c(-1.4,1.4), main="mejor: Amarillo",Trow=F)
+points(fccol$cor.clus[,c(4,5)], pch=16)
+text(fccol$cor.clus[,c(4,5)], label=colcolumn)
+
+plot.dudi(acscol, ex=1, ey=3, infaxes="in", ucal=0.19, xlim=c(-1.4,1.4), main="mejor: Blanco",Trow=F)
+points(fccol$cor.clus[,c(1,3)], pch=16)
+text(fccol$cor.clus[,c(1,3)], label=colcolumn)
+@
+\end{figure}
+\begin{figure}[H]
+\centering
+<<fig=true, echo=false>>==
+par(mfrow=c(2,2))
+plot.dudi(acscol, ex=1, ey=2, infaxes="in", ucal=0, xlim=c(-1.4,1.4), main="mejor: Gris y Negro",Trow=F)
+points(fccol$cor.clus[,c(1,2)], pch=16)
+text(fccol$cor.clus[,c(1,2)], label=colcolumn)
+
+plot.dudi(acscol, ex=3, ey=4, infaxes="in", ucal=0.15, xlim=c(-1.4,1.4), main="mejor: Rosado y Castaño",Trow=F)
+points(fccol$cor.clus[,c(3,4)], pch=16)
+text(fccol$cor.clus[,c(3,4)], label=colcolumn)
+
+plot.dudi(acscol, ex=2, ey=6, infaxes="in", ucal=0.2, xlim=c(-1.4,1.4), main="mejor: Violeta",Trow=F)
+points(fccol$cor.clus[,c(2,6)], pch=16)
+text(fccol$cor.clus[,c(2,6)], label=colcolumn)
+
+plot.dudi(acscol, ex=2, ey=4, infaxes="in", ucal=0.50, xlim=c(-1.4,1.4), main="mejor: Verde",Trow=F)
+points(fccol$cor.clus[,c(2,4)], pch=16)
+text(fccol$cor.clus[,c(2,4)], label=colcolumn)
+@
+\end{figure}
+\begin{figure}[H]
+\centering
+<<fig=true, echo=false>>==
+par(mfrow=c(2,2))
+plot.dudi(acscol, ex=1, ey=6, infaxes="in", ucal=0.80, xlim=c(-1.4,1.4), main="mejor: Naranja",Trow=F)
+points(fccol$cor.clus[,c(1,6)], pch=16)
+text(fccol$cor.clus[,c(1,6)], label=colcolumn)
+@
+\end{figure}
+
+%20
+\section{Qué relación encuentra entre el primer eje del ACS y la clasificación?}
+
+En la figura \ref{plano_clasif} se observa el primer plano factorial con adjetivos en Gris, colores en Azul, y clases en Rojo. El primer eje factorial está separando los colores asociados con fuego (rojo, naranja y amarillo), versus los demás, indicando que dicha característica tiene una influencia importante en la percepción de los evaluadores.
+
+\begin{figure}[H]
+\centering
+<<fig=true, echo=false>>==
+par(mfrow=c(1,1))
+plot.dudi(acscol, ex=1, ey=2, infaxes="in", xlim=c(-1.4,1.4), col.row="grey55")
+points(fccol$cor.clus[,c(1,2)], pch=16)
+text(fccol$cor.clus[,c(1,2)], label=colcolumn, col = "red")
+@
+\caption{Primer plano factorial, con resultados de clasificación como ilustrativos}
+\label{plano_clasif}
+\end{figure}
+
+\end{document}

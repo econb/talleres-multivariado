@@ -1,0 +1,149 @@
+\documentclass{article}
+
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{array}
+\usepackage{subfig}
+\usepackage{graphicx}
+
+\title {Análisis Multivariado\\Taller No. 3: Ejemplo Lactantes}
+\author {Laura Elizabeth Holguín\\Eduardo Contraras Bohorquez\\Diana Catalina Martínez}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\section {?`Porque con el ACP se cumplen los objetivos planteados?}
+Por que el ACP permite validar las relaciones entre el peso de los bebés y el consumo de leche materna, la alimentación suplementaria (tetero), y el peso y la talla de la madre.  Así mismo, permite establecer si existe o no diferencias entre el peso de los bebés y el sexo, y si la incidencia de las demás variables activas difiere con el sexo del bebé.
+
+\section {Describa el bebé promedio según las cinco variables.}
+
+<<fig=FALSE,echo=FALSE>>==
+# Centro de gravedad
+library(FactoClass)
+library(ISwR)
+data(kfm)
+Y <- kfm [,-c(1,3)]
+n <-nrow (Y);
+#g <-(1/n)* rowSums (t(Y));g # igual a 
+g<-colMeans (Y)
+g
+@
+El bebé promedio consume 7,5 dl de leche al día, pesa 5,3 kg, toma 96 ml de tetero al día (alimentación suplementaria), y su madre tiene un peso de 59 kg y una estatura de 1,67 cm.
+
+\section {?`Cuántos ejes retiene para el análisis? ?`Porque?}
+Para este análisis se tomaron los primeros dos ejes, teniendo en cuenta: 
+\textbf{a)} El histograma de valores propios del ACP normado (Figura 1) del cual los primeros dos valores propios se destacan y son mayores que 1.
+\textbf{b)} Así mismo, el primer plano retiene el 49,5\%; y el segundo el 21,5\%.  Esto es, entre los dos planos se retiene cerca del 80\% de la inercia (Tabla 1).\\
+A pesar de que la Tabla 1 muestra que los tres primeros ejes retienen el 85,7\% de la inercia, el tercer eje no se escoge teniendo en cuenta que el valor propio para este eje no alcanza a la unidad.
+
+\begin{figure}[ht]
+\centering
+\caption{Histograma de valores propios}
+%\includegraphics[width=2cm, height=2cm]
+<<fig=TRUE, echo=FALSE>>==
+#ACP<-dudi.pca(Y)
+Y<-kfm [,-c(1,3)]
+ACP<-dudi.pca(Y, scannf=FALSE, nf=2) #nf
+#histograma de valores propios
+barplot(ACP$eig)
+# valores propios y proporciones
+valp <-t(inertia.dudi(ACP)$TOT)
+print(xtable (valp, digits =rep (3,6)), file="t1.tex", floating=FALSE)
+@
+\end{figure}
+
+\begin{table}[h]
+\centering
+\subfloat[Valores propios y proporciones]{\label{tab:tab1a}{\input{./t1}}}\quad
+\label{tab:tab1}
+\end{table}
+
+\section {Según la información disponible, ?`cuáles variables son altamente correlacionadas?
+?`Cuáles no están correlacionadas?}
+Según el círculo de correlaciones del ACP normado (Figura 2), en el primer eje todas las variables, excepto alimentación suplementaria (tetero) están altamente correlacionadas. El segundo eje, por su parte, contrapone los resultados de leche materna contra peso de la madre. Esta información se corrobora a través de la tabla 2, la cual muestra las coordenadas de las variables sobre los ejes factoriales.
+
+\begin{figure}[ht]
+\centering
+\caption{Círculo de correlaciones del ACP normado}
+<<fig=TRUE, echo=FALSE>>==
+#Círculo de correlaciones
+#plot.dudi(ACP, tcol=FALSE)
+s.corcircle(ACP$co)
+# peso del bebé como ilustrativa
+Gweight <-cor( kfm$weight, ACP$li); rownames(Gweight) <-"weight"; Gweight
+s.arrow (Gweight, add.plot=TRUE, boxes = FALSE )
+#Coordenadas
+print(xtable (ACP$co, digits=rep(3,3)), file="t2.tex", floating=FALSE)
+@
+\end{figure}
+
+\begin{table}[h]
+\centering
+\subfloat[Coordenadas de las variables sobre los ejes factoriales]{\label{tab:tab1a}{\input{./t2}}}\quad
+\label{tab:tab2}
+\end{table}
+
+\section {?`Qué variables se puede decir que están más altamente correlacionadas con el primer
+factor? ?`Puede darle algún significado a este primer factor?}
+<<echo=FALSE>>==
+inertia.dudi(ACP,,T)
+@
+
+Como muestra la salida, las variables que tienen una mayor contribución a la inercia del primer factor son leche materna (27,3\%), talla de la madre (25\%) y peso del bebé (24,7\%). Estos resultados son evidentes, adicionalmente, en el círculo de correlaciones, donde los vectores correspondientes a la leche materna y al peso del bebé son las más largas y su ángulo es pequeño.
+
+
+\section{?`Puede identificar subconjuntos de variables altamente correlacionas entre sí? ?`Existe
+algún subconjunto de variables que se pueda decir que no está correlacionado con
+otro subconjunto de variables?}
+
+Observando el círculo de correlaciones, y de acuerdo a la matriz de correlaciones, los subconjuntos de variables más correlacionadas corresponderían a las variables talla de la madre y peso del bebé; y peso de la madre y  consumo de leche materna diaria.\\
+Adicionalmente, según la matriz de correlaciones las variables que más se correlacionan son consumo de leche materna (diaria) y peso del bebé. Por su parte, la alimentación suplementaria (tetero), se podría decir que casi no se correlaciona con el resto de variables.
+
+\section{?`Qué características tienen los lactantes según su posición en el primer plano factorial?}
+
+\begin{figure}[ht]
+\centering
+\caption{Primer plano factorial de los bebés lactantes}
+<<fig=TRUE, echo=FALSE>>==
+plot (ACP, Tcol =FALSE, xlab="Eje 1", ylab="Eje 2")
+@
+\end{figure}
+
+El eje 1 representa el tamaño de los bebés lactantes, por tanto, los bebés más grandes se ubican en el lado negativo de dicho eje (lado izquierdo). Respecto al eje 2, se puede identificar que los bebés que se encuentran en la parte positiva del eje (lado derecho superior) son los que mayor consumo de tetero presentaron.  Este resultado también es evidente al evaluar las contribuciones de cada una de las variables a los ejes. En particular, la variable tetero es la que mayor contribución presenta al eje 2, con un 90\%.
+
+\section{?`Los análisis anteriores sugieren que pueden constituirse grupos de bebés? ?`Podría
+sugerir algunos grupos?}
+
+De acuerdo al primer plano factorial, se podría identificar que los bebés que se encuentran en los cuadrantes positivos del eje 1 corresponden a los que están por debajo del peso promedio; los que están en los cuadrantes negativos de dicho eje están por encima del peso promedio. 
+
+\section{?`Se puede decir que hay diferencia entre niños y niñas en este análisis? ?`Cómo son
+esas diferencias?}
+
+Según la Figura 4 los niños podrían tener mayor tamaño que las niñas, no obstante la diferencia podría no ser importante
+
+\begin{figure}[ht]
+\centering
+\caption{Primer plano factorial de los bebés, según sexo}
+<<fig=TRUE, echo=FALSE>>==
+Ysupcat<-data.frame(kfm[,3])
+sup<-supqual(ACP,Ysupcat)
+plot (ACP, Tcol =FALSE, ucal=100 , cex.row =0.2, xlim=c( -1 ,1.5), ylim =c(-0.5 ,0.5) )
+points (sup$coor,col ="darkgreen")
+text (sup$coor, labels = rownames (sup$coor),col ="darkgreen",pos =1)
+@
+\end{figure}
+
+\section{Escriba un resumen práctico del análisis que satisfaga los objetivos planteados}
+
+El ACP aportó evidencia estadística de que existe una relación directamente proporcional entre el consumo de leche materna y el peso de los bebés, así mismo se pudo identificar que el peso de las madres tiene un comportamiento similar al de consumo de leche materna, por lo que se puede pensar que la segunda aporta información parecida a la primera.\\
+
+Por otro lado, la estrecha relación que se encontró entre las variables permitió pasar de cinco a dos dimensiones, es decir, se logró capturar la mayor variación en dos ejes, lo cual facilita el análisis.\\
+
+En cuanto a la relación entre la alimentación suplementaria (tetero) y las demás variables, se encontró que tetero no está correlacionada con las demás variables.\\
+
+Por último, se encontró que pese a existir diferencias en el factor tamaño entre niños y niñas, ambas categorías se ubican cerca del valor promedio, lo cual podría indicar que la relación entre las variables no proveen suficiente información para discriminar entre sexos.
+
+\end{document}
